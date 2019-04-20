@@ -54,8 +54,9 @@ class AdminController extends Controller
         if ($_POST && ! in_array(C, $nocheck) && session('formcheck') != post('formcheck')) {
             if (! session('formcheck') && $this->config('session_in_sitepath')) { // 会话目录缺失时重建目录
                 create_session_dir(RUN_PATH . '/session/', 2);
-            } elseif (! session('formcheck') && ! session_save_path() && ! is_writable($_SERVER['TEMP'] . '/sess_' . session_id())) {
-                error(' 操作系统缓存目录写入权限不足！' . $_SERVER['TEMP']);
+            }
+            if (! session_save_path() && isset($_SERVER['TMP']) && ! is_writable($_SERVER['TMP'] . '/sess_' . session_id())) {
+                error(' 操作系统缓存目录写入权限不足！' . $_SERVER['TMP']);
             }
             alert_back('表单提交校验失败,请刷新后重试！');
         }

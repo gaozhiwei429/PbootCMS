@@ -53,13 +53,10 @@ class Check
             check_dir(APP_PATH, true);
             check_dir(APP_PATH . '/common', true);
             check_dir(CONF_PATH, true);
-            check_dir(RUN_PATH, true);
-            check_dir(DOC_PATH . STATIC_DIR . '/upload', true);
-        } else {
-            check_dir(RUN_PATH, true);
-            check_dir(DOC_PATH . STATIC_DIR . '/upload', true);
         }
         
+        check_dir(RUN_PATH, true);
+        check_dir(DOC_PATH . STATIC_DIR . '/upload', true);
         // 目录权限判断
         if (! is_writable(RUN_PATH)) {
             error('缓存目录写入权限不足！' . RUN_PATH);
