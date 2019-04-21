@@ -103,7 +103,7 @@ class UpgradeController extends Controller
                     check_dir(dirname($path), true); // 自动创建目录
                                                      
                     // 定义执行下载的类型
-                    $types = '.gif|.jpeg|.png|.bmp|.jpg|.zip|.rar|.doc|.docx|.ppt|.pptx|.xls|.xlsx|.chm|';
+                    $types = '.zip|.rar|.doc|.docx|.ppt|.pptx|.xls|.xlsx|.chm|';
                     $pathinfo = explode(".", basename($path));
                     $ext = end($pathinfo); // 获取扩展
                     if (preg_match('/\.' . $ext . '\|/i', $types)) {
