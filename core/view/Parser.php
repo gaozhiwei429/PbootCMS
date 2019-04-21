@@ -1,7 +1,6 @@
 <?php
 /**
  * @copyright (C)2016-2099 Hnaoyun Inc.
- * @license This is not a freeware, use is subject to license terms
  * @author XingMeng
  * @email hnxsh@foxmail.com
  * @date 2016年11月6日
@@ -29,15 +28,13 @@ class Parser
         self::parOutputDefine(); // 输出常量
         self::parOutputVar(); // 输出变量
         self::parOutputObjVal(); // 输出对象
-        self::parOutputArrVal(); // 输出数组
-                                 
-        // self::parOutputConfig(); // 输出配置参数
-        
+        self::parOutputConfig(); // 输出配置参数
         self::parOutputSession(); // 输出会话Session
         self::parOutputCookie(); // 输出会话Cookie
         self::parOutputServer(); // 输出环境变量
         self::parOutputPost(); // 输出POST请求值
         self::parOutputGet(); // 输出GET请求值
+        self::parOutputArrVal(); // 输出数组
         self::parOutputFun(); // 使用函数
                               
         // =========以下为逻辑控制方法==========
@@ -50,15 +47,13 @@ class Parser
         // ============以下为变量解析方法==========
         self::parVar(); // 解析变量
         self::parObjVar(); // 解析对象
-        self::parArrVar(); // 解析数组
-                           
-        // self::parConfigVar(); // 解析配置
-        
+        self::parConfigVar(); // 解析配置
         self::parSession(); // 解析Session
         self::parCookie(); // 解析Cookie
         self::parServer(); // 解析环境变量
         self::parPost(); // 解析POST请求值
         self::parGet(); // 解析GET请求值
+        self::parArrVar(); // 解析数组
         self::parFun(); // 解析函数
                         
         // 返回解释的内容
@@ -101,21 +96,16 @@ class Parser
         }
     }
 
-    // 解析输出数组变量 如：{$user['name']}
-    private static function parOutputArrVal()
-    {
-        $pattern = '/\{\$([\w]+)(\[[\w\'\"\-\[\]]+\])\}/';
-        if (preg_match($pattern, self::$content)) {
-            self::$content = preg_replace($pattern, "<?php echo @\$this->vars['$1']$2;?>", self::$content);
-        }
-    }
-
     // 解析输出配置 如：{$config.public_app},支持多级
     private static function parOutputConfig()
     {
         $pattern = '/\{\$config\.([\w\.]+)\}/';
-        if (preg_match($pattern, self::$content)) {
-            self::$content = preg_replace($pattern, "<?php print_r(\\core\\basic\\Config::get('$1'));?>", self::$content);
+        if (preg_match_all($pattern, self::$content, $matchs)) {
+            foreach ($matchs[0] as $key => $value) {
+                if (strpos($matchs[1][$key], 'database') === false) {
+                    self::$content = str_replace($matchs[0][$key], "<?php print_r(\\core\\basic\\Config::get('" . $matchs[1][$key] . "'));?>", self::$content);
+                }
+            }
         }
     }
 
@@ -140,7 +130,7 @@ class Parser
     // 解析输出Server变量 如：{$server.PATH_INFO}
     private static function parOutputServer()
     {
-        $pattern = '/\{\$server\.([\w]+)\}/';
+        $pattern = '/\{\$server\.([\w\-]+)\}/';
         if (preg_match($pattern, self::$content)) {
             self::$content = preg_replace($pattern, "<?php echo escape_string(\$_SERVER['$1']);?>", self::$content);
         }
@@ -149,7 +139,7 @@ class Parser
     // 解析输出POST变量 如：{$post.username}
     private static function parOutputPost()
     {
-        $pattern = '/\{\$post\.([\w]+)\}/';
+        $pattern = '/\{\$post\.([\w\-]+)\}/';
         if (preg_match($pattern, self::$content)) {
             self::$content = preg_replace($pattern, "<?php echo post('$1');?>", self::$content);
         }
@@ -158,9 +148,24 @@ class Parser
     // 解析输出GET变量 如：{$get.username}
     private static function parOutputGet()
     {
-        $pattern = '/\{\$get\.([\w]+)\}/';
+        $pattern = '/\{\$get\.([\w\-]+)\}/';
         if (preg_match($pattern, self::$content)) {
             self::$content = preg_replace($pattern, "<?php echo get('$1');?>", self::$content);
+        }
+    }
+
+    // 解析输出数组变量 如：{$user['name']} 2.0修改为：{$user.name},支持二维数组{$user.name.sex}
+    private static function parOutputArrVal()
+    {
+        $pattern = '/\{\$([\w]+)\.([\w\-]+)(\.([\w\-]+))?\}/';
+        if (preg_match_all($pattern, self::$content, $matches)) {
+            foreach ($matches[0] as $key => $value) {
+                if ($matches[3][$key]) {
+                    self::$content = preg_replace($pattern, "<?php echo @\$this->vars['$1']['$2']['$4'];?>", self::$content);
+                } else {
+                    self::$content = preg_replace($pattern, "<?php echo @\$this->vars['$1']['$2'];?>", self::$content);
+                }
+            }
         }
     }
 
@@ -217,11 +222,18 @@ class Parser
                 $pattern_num = '/\[(' . $matches[5][$i] . ')\]/';
                 if (preg_match($pattern_num, self::$content)) {
                     if (defined('PAGE')) {
-                        self::$content = preg_replace($pattern_num, "<?php echo (PAGE-1)*PAGESIZE+\$$1; ?>", self::$content);
+                        self::$content = preg_replace($pattern_num, "<?php echo @(PAGE-1)*PAGESIZE+\$$1; ?>", self::$content);
                     } else {
                         self::$content = preg_replace($pattern_num, "<?php echo \$$1; ?>", self::$content);
                     }
                 }
+                
+                // 解析key
+                $pattern_key = '/\[(' . $matches[2][$i] . ')\]/';
+                if (preg_match($pattern_key, self::$content)) {
+                    self::$content = preg_replace($pattern_key, "<?php echo \$$1; ?>", self::$content);
+                }
+                
                 // 解析内部变量
                 $pattern_var = '/\[(' . $matches[3][$i] . ')(\[[\'\"][\w]+[\'\"]\])?(\-\>[\w$]+)?\]/';
                 self::$content = preg_replace($pattern_var, "<?php echo \$$1$2$3; ?>", self::$content);
@@ -261,12 +273,19 @@ class Parser
                         self::$content = preg_replace($pattern_num, "<?php echo \$$1; ?>", self::$content);
                     }
                 }
+                
+                // 解析key
+                $pattern_key = '/\[(' . $matches[2][$i] . ')\]/';
+                if (preg_match($pattern_key, self::$content)) {
+                    self::$content = preg_replace($pattern_key, "<?php echo \$$1; ?>", self::$content);
+                }
+                
                 // 解析内部变量
                 $pattern_var = '/\[(' . $matches[3][$i] . ')(\[[\'\"][\w]+[\'\"]\])?(\-\>[\w$]+)?\]/';
                 self::$content = preg_replace($pattern_var, "<?php echo \$$1$2$3; ?>", self::$content);
             }
             // 解析闭合标签
-            self::$content = str_replace('{/foreach}', "<?php } ?>", self::$content);
+            self::$content = str_replace('{/foreach}', "<?php }?>", self::$content);
         }
     }
 
@@ -275,7 +294,9 @@ class Parser
     {
         $pattern = '/\{#\}(\s\S]*?)\{#\}/';
         if (preg_match($pattern, self::$content)) {
-            self::$content = preg_replace($pattern, "<?php /* $1 */?>", self::$content);
+            self::$content = preg_replace($pattern, "<?php
+            /* $1 */
+            ?>", self::$content);
         }
     }
 
@@ -284,7 +305,7 @@ class Parser
     {
         $pattern = '/\{php\}([\s\S]*?)\{\/php\}/';
         if (preg_match($pattern, self::$content)) {
-            self::$content = preg_replace($pattern, "<?php  $1 ?>", self::$content);
+            self::$content = preg_replace($pattern, "<?php  $1?>", self::$content);
         }
     }
 
@@ -306,21 +327,19 @@ class Parser
         }
     }
 
-    // 解析数组变量 [$user['name']]
-    private static function parArrVar()
-    {
-        $pattern = '/\[\$([\w]+)\[([\'\"\w\[\]]+)\]\]/';
-        if (preg_match($pattern, self::$content)) {
-            self::$content = preg_replace($pattern, "\$this->vars['$1'][$2]", self::$content);
-        }
-    }
-
     // 解析配置变量[$config.name],支持多级
     private static function parConfigVar()
     {
         $pattern = '/\[\$config\.([\w\.]+)\]/';
         if (preg_match($pattern, self::$content)) {
             self::$content = preg_replace($pattern, "\\core\\basic\\Config::get('$1')", self::$content);
+        }
+        if (preg_match_all($pattern, self::$content, $matchs)) {
+            foreach ($matchs[0] as $key => $value) {
+                if (strpos($matchs[1][$key], 'database') === false) {
+                    self::$content = str_replace($matchs[0][$key], "\\core\\basic\\Config::get('" . $matchs[1][$key] . "')", self::$content);
+                }
+            }
         }
     }
 
@@ -351,7 +370,7 @@ class Parser
         }
     }
 
-    // 解析post [$post.id]
+    // 解析POST [$post.id]
     private static function parPost()
     {
         $pattern = '/\[\$post\.([\w]+)\]/';
@@ -360,12 +379,27 @@ class Parser
         }
     }
 
-    // 解析Get[$get.id]
+    // 解析GET[$get.id]
     private static function parGet()
     {
         $pattern = '/\[\$get\.([\w]+)\]/';
         if (preg_match($pattern, self::$content)) {
             self::$content = preg_replace($pattern, "get('$1')", self::$content);
+        }
+    }
+
+    // 解析数组变量 [$user['name']] 2.0修改为[$user.name],支持二维数组[$user.name.sex]
+    private static function parArrVar()
+    {
+        $pattern = '/\[\$([\w]+)\.([\w\-]+)(\.([\w\-]+))?\]/';
+        if (preg_match_all($pattern, self::$content, $matches)) {
+            foreach ($matches[0] as $key => $value) {
+                if ($matches[3][$key]) {
+                    self::$content = preg_replace($pattern, "\$this->vars['$1']['$2']['$4']", self::$content);
+                } else {
+                    self::$content = preg_replace($pattern, "\$this->vars['$1']['$2']", self::$content);
+                }
+            }
         }
     }
 

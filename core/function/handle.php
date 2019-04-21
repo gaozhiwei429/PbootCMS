@@ -2,7 +2,6 @@
 
 /**
  * @copyright (C)2016-2099 Hnaoyun Inc.
- * @license This is not a freeware, use is subject to license terms
  * @author XingMeng
  * @email hnxsh@foxmail.com
  * @date 2017年11月5日
@@ -225,6 +224,26 @@ function get_date_diff($startstamp, $endstamp, $return = 'm')
             break;
     }
     return $string;
+}
+
+// 获取间隔的月份的起始及结束日期
+function get_month_days($date, $start = 0, $interval = 1, $retamp = false)
+{
+    $timestamp = strtotime($date) ?: $date;
+    $first_day = strtotime(date('Y', $timestamp) . '-' . date('m', $timestamp) . '-01 +' . $start . ' month');
+    $last_day = strtotime(date('Y-m-d', $first_day) . ' +' . $interval . ' month -1 day');
+    if ($retamp) {
+        $return = array(
+            'first' => $first_day,
+            'last' => $last_day
+        );
+    } else {
+        $return = array(
+            'first' => date('Y-m-d', $first_day),
+            'last' => date('Y-m-d', $last_day)
+        );
+    }
+    return $return;
 }
 
 // 生成无限极树,$data为二维数组数据
@@ -454,7 +473,7 @@ function clear_html_blank($string)
 // 去除字符串两端斜线
 function trim_slash($string)
 {
-    return preg_replace('/^(\/|\\\)?(.*?)(\/|\\\)?$/', '$2', $string);
+    return trim($string, '/');
 }
 
 // 驼峰转换下划线加小写字母
@@ -642,79 +661,6 @@ function get_http_host()
     return str_replace(':' . $_SERVER['SERVER_PORT'], '', $_SERVER['HTTP_HOST']);
 }
 
-// 服务器信息
-function get_server_info()
-{
-    // 定义输出常量
-    define('YES', 'Yes');
-    define('NO', '<span style="color:red">No</span>');
-    
-    // 服务器系统
-    $data['php_os'] = PHP_OS;
-    // 服务器访问地址
-    $data['http_host'] = $_SERVER['HTTP_HOST'];
-    // 服务器名称
-    $data['server_name'] = $_SERVER['SERVER_NAME'];
-    // 服务器端口
-    $data['server_port'] = $_SERVER['SERVER_PORT'];
-    // 服务器地址
-    $data['server_addr'] = isset($_SERVER['LOCAL_ADDR']) ? $_SERVER['LOCAL_ADDR'] : $_SERVER['SERVER_ADDR'];
-    // 服务器软件
-    $data['server_software'] = $_SERVER['SERVER_SOFTWARE'];
-    // 站点目录
-    $data['document_root'] = isset($_SERVER['DOCUMENT_ROOT']) ? $_SERVER['DOCUMENT_ROOT'] : DOC_PATH;
-    // PHP版本
-    $data['php_version'] = PHP_VERSION;
-    // 数据库驱动
-    $data['db_driver'] = Config::get('database.type');
-    // php配置文件
-    $data['php_ini'] = @php_ini_loaded_file();
-    // 最大上传
-    $data['upload_max_filesize'] = ini_get('upload_max_filesize');
-    // 最大提交
-    $data['post_max_size'] = ini_get('post_max_size');
-    // 最大提交文件数
-    $data['max_file_uploads'] = ini_get('max_file_uploads');
-    // 内存限制
-    $data['memory_limit'] = ini_get('memory_limit');
-    // 检测gd扩展
-    $data['gd'] = extension_loaded('gd') ? YES : NO;
-    // 检测imap扩展
-    $data['imap'] = extension_loaded('imap') ? YES : NO;
-    // 检测socket扩展
-    $data['sockets'] = extension_loaded('sockets') ? YES : NO;
-    // 检测curl扩展
-    $data['curl'] = extension_loaded('curl') ? YES : NO;
-    // 会话保存路径
-    $data['session_save_path'] = session_save_path() ?: $_SERVER['TMP'];
-    // 检测standard库是否存在
-    $data['standard'] = extension_loaded('standard') ? YES : NO;
-    // 检测多线程支持
-    $data['pthreads'] = extension_loaded('pthreads') ? YES : NO;
-    // 检测XCache支持
-    $data['xcache'] = extension_loaded('XCache') ? YES : NO;
-    // 检测APC支持
-    $data['apc'] = extension_loaded('APC') ? YES : NO;
-    // 检测eAccelerator支持
-    $data['eaccelerator'] = extension_loaded('eAccelerator') ? YES : NO;
-    // 检测wincache支持
-    $data['wincache'] = extension_loaded('wincache') ? YES : NO;
-    // 检测ZendOPcache支持
-    $data['zendopcache'] = extension_loaded('Zend OPcache') ? YES : NO;
-    // 检测memcache支持
-    $data['memcache'] = extension_loaded('memcache') ? YES : NO;
-    // 检测memcached支持
-    $data['memcached'] = extension_loaded('memcached') ? YES : NO;
-    // 已经安装模块
-    $loaded_extensions = get_loaded_extensions();
-    $extensions = '';
-    foreach ($loaded_extensions as $key => $value) {
-        $extensions .= $value . ', ';
-    }
-    $data['extensions'] = $extensions;
-    return json_decode(json_encode($data));
-}
-
 // 获取数据库类型
 function get_db_type()
 {
@@ -734,26 +680,6 @@ function get_db_type()
             $db = null;
     }
     return $db;
-}
-
-// 获取间隔的月份的起始及结束日期
-function get_month_days($date, $start = 0, $interval = 1, $retamp = false)
-{
-    $timestamp = strtotime($date) ?: $date;
-    $first_day = strtotime(date('Y', $timestamp) . '-' . date('m', $timestamp) . '-01 +' . $start . ' month');
-    $last_day = strtotime(date('Y-m-d', $first_day) . ' +' . $interval . ' month -1 day');
-    if ($retamp) {
-        $return = array(
-            'first' => $first_day,
-            'last' => $last_day
-        );
-    } else {
-        $return = array(
-            'first' => date('Y-m-d', $first_day),
-            'last' => date('Y-m-d', $last_day)
-        );
-    }
-    return $return;
 }
 
 // 是否伪静态模式
@@ -882,6 +808,72 @@ function strlen_both($string)
         }
     }
     return $n;
+}
+
+// 验证内容是否合规
+function verify($string, $type, $varname = '', $exit = false)
+{
+    switch ($type) {
+        case 'int':
+            if (! preg_match('/^[0-9]+$/', $string)) {
+                $err = '必须为整数！';
+            }
+            break;
+        case 'float':
+            if (! is_float($string)) {
+                $err = '必须为浮点数！';
+            }
+            break;
+        case 'num':
+            if (! is_numeric($string)) {
+                $err = '必须为数字！';
+            }
+            break;
+        case 'letter':
+            if (! preg_match('/^[a-zA-Z]+$/', $string)) {
+                $err = '只能包含字母！';
+            }
+            break;
+        case 'var':
+            if (! preg_match('/^[\w\-\.]+$/', $string)) {
+                $err = '只能包含字母、数字、划线、点！';
+            }
+            break;
+        case 'bool':
+            if (! is_bool($string)) {
+                $err = '必须为布尔类型！';
+            }
+            break;
+        case 'date':
+            if (! strtotime($string)) {
+                $err = '必须为日期类型！';
+            }
+            break;
+        case 'array':
+            if (! is_array($string)) {
+                $err = '必须为数组类型！';
+            }
+            break;
+        case 'object':
+            if (! is_object($string)) {
+                $err = '必须为对象类型！';
+            }
+            break;
+        case 'vars':
+            if (! preg_match('/^[\x{4e00}-\x{9fa5}\w\-\.,\s]+$/u', $string)) {
+                $err = '只能包含中文、字母、数字、横线、点、逗号、空格！';
+            }
+            break;
+        default:
+            error($varname . '数据类型设置错误！');
+    }
+    if ($exit && isset($err)) {
+        exit($varname . $err);
+    } elseif (isset($err)) {
+        return '';
+    } else {
+        return $string;
+    }
 }
 
 

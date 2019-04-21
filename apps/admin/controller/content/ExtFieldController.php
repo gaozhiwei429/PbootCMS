@@ -1,7 +1,6 @@
 <?php
 /**
  * @copyright (C)2016-2099 Hnaoyun Inc.
- * @license This is not a freeware, use is subject to license terms
  * @author XingMeng
  * @email hnxsh@foxmail.com
  * @date 2018年3月1日
@@ -120,14 +119,14 @@ class ExtFieldController extends Controller
             
             // 执行扩展字段记录添加
             if ($this->model->addExtField($data)) {
-                $this->log('新增扩展字段成功！');
+                $this->addLog('新增扩展字段成功！');
                 if (! ! $backurl = get('backurl')) {
                     success('新增成功！', base64_decode($backurl));
                 } else {
                     success('新增成功！', url('/admin/ExtField/index'));
                 }
             } else {
-                $this->log('新增扩展字段失败！');
+                $this->addLog('新增扩展字段失败！');
                 error('新增失败！', - 1);
             }
         } else {
@@ -156,10 +155,10 @@ class ExtFieldController extends Controller
                     $result = $this->model->amd("ALTER TABLE ay_content_ext DROP COLUMN $name");
                 }
             }
-            $this->log('删除扩展字段' . $id . '成功！');
+            $this->addLog('删除扩展字段' . $id . '成功！');
             success('删除成功！', - 1);
         } else {
-            $this->log('删除扩展字段' . $id . '失败！');
+            $this->addLog('删除扩展字段' . $id . '失败！');
             error('删除失败！', - 1);
         }
     }
@@ -212,7 +211,7 @@ class ExtFieldController extends Controller
             
             // 执行修改
             if ($this->model->modExtField($id, $data)) {
-                $this->log('修改扩展字段' . $id . '成功！');
+                $this->addLog('修改扩展字段' . $id . '成功！');
                 if (! ! $backurl = get('backurl')) {
                     success('修改成功！', base64_decode($backurl));
                 } else {

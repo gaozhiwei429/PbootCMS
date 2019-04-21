@@ -1,7 +1,6 @@
 <?php
 /**
  * @copyright (C)2016-2099 Hnaoyun Inc.
- * @license This is not a freeware, use is subject to license terms
  * @author XingMeng
  * @email hnxsh@foxmail.com
  * @date 2017年11月5日
@@ -17,18 +16,6 @@ use core\basic\Basic;
 use core\basic\Smtp;
 
 /**
- * 生成实际跳转路径
- *
- * @param string $url
- *            接收控制器方法访问完整路径，如：/home/index/index
- * @return mixed
- */
-function url($url, $addExt = true)
-{
-    return Url::get($url, $addExt);
-}
-
-/**
  * 自定义错误页面
  *
  * @param string $_string内容            
@@ -42,7 +29,7 @@ function error($string, $jump_url = null, $time = 2)
         $string = '未知错误！';
     
     if (Config::get('return_data_type') == 'json' || is_ajax()) { // 接口模型返回格式数据
-        Response::json(0, strip_tags($string));
+        echo Response::json(0, strip_tags($string));
     } else {
         $err_tpl = CORE_PATH . '/template/error.html';
         if ($jump_url == '-1' && isset($_SERVER['HTTP_REFERER'])) {
@@ -68,7 +55,7 @@ function error($string, $jump_url = null, $time = 2)
 function success($string, $jump_url = null, $time = 2)
 {
     if (Config::get('return_data_type') == 'json' || is_ajax()) { // 接口模型返回格式数据
-        Response::json(1, strip_tags($string));
+        echo Response::json(1, strip_tags($string));
     } else {
         $err_tpl = CORE_PATH . '/template/success.html';
         if ($jump_url == '-1' && isset($_SERVER['HTTP_REFERER'])) {
@@ -92,10 +79,11 @@ function success($string, $jump_url = null, $time = 2)
 function alert($info, $status = 0)
 {
     if (Config::get('return_data_type') == 'json' || is_ajax()) { // 接口模型返回格式数据
-        Response::json($status, strip_tags($info));
+        echo Response::json($status, strip_tags($info));
     } else {
         echo '<script type="text/javascript">alert("' . clear_html_blank($info) . '");</script>';
     }
+    exit();
 }
 
 /**
@@ -106,11 +94,11 @@ function alert($info, $status = 0)
 function alert_back($info, $status = 0)
 {
     if (Config::get('return_data_type') == 'json' || is_ajax()) { // 接口模型返回格式数据
-        Response::json($status, strip_tags($info));
+        echo Response::json($status, strip_tags($info));
     } else {
         echo '<script type="text/javascript">alert("' . clear_html_blank($info) . '");window.history.go(-1);</script>';
-        exit();
     }
+    exit();
 }
 
 /**
@@ -139,7 +127,7 @@ function location($url)
 function alert_location($info, $url, $status = 0)
 {
     if (Config::get('return_data_type') == 'json' || is_ajax()) { // 接口模型返回格式数据
-        Response::json($status, strip_tags($info));
+        echo Response::json($status, strip_tags($info));
     } else {
         if ($url == '-1' && isset($_SERVER['HTTP_REFERER'])) {
             $url = $_SERVER['HTTP_REFERER'];
@@ -148,8 +136,8 @@ function alert_location($info, $url, $status = 0)
             }
         }
         echo '<script type="text/javascript">alert("' . clear_html_blank($info) . '");location.href="' . $url . '";</script>';
-        exit();
     }
+    exit();
 }
 
 /**
@@ -160,18 +148,30 @@ function alert_location($info, $url, $status = 0)
 function alert_close($info, $status = 0)
 {
     if (Config::get('return_data_type') == 'json' || is_ajax()) { // 接口模型返回格式数据
-        Response::json($status, strip_tags($info));
+        echo Response::json($status, strip_tags($info));
     } else {
         echo '<script type="text/javascript">alert("' . clear_html_blank($info) . '");window.close();</script>';
-        exit();
     }
+    exit();
+}
+
+/**
+ * 生成实际跳转路径
+ *
+ * @param string $url
+ *            接收控制器方法访问完整路径，如：/home/index/index
+ * @return mixed
+ */
+function url($url, $addExt = true)
+{
+    return Url::get($url, $addExt);
 }
 
 /**
  * 实例化模型对象助手
  *
  * @param string $name
- *            需要实力化的模型名称
+ *            需要实例化的模型名称
  * @param string $new
  *            是否强制新建对象
  * @return mixed
@@ -179,6 +179,12 @@ function alert_close($info, $status = 0)
 function model($name, $new = false)
 {
     return Basic::createModel($name, $new);
+}
+
+// api读取数据
+function api($name, $param = array(), $rsJson = false, $rsArray = false)
+{
+    return Basic::createApi($name, $param, $rsJson, $rsArray);
 }
 
 // 输出模板内容
@@ -238,9 +244,9 @@ function response($data)
  *
  * @param mixed $data            
  */
-function json($code, $data)
+function json($code, $data, $end = false)
 {
-    return core\basic\Response::json($code, $data);
+    return core\basic\Response::json($code, $data, $end);
 }
 
 /**
@@ -566,6 +572,9 @@ function session($name, $value = null)
 {
     if (! isset($_SESSION)) {
         session_start(); // 自动启动会话
+        if (! session_save_path() && ! is_writable($_SERVER['TMP'] . '/sess_' . session_id())) {
+            error(' 操作系统缓存目录写入权限不足！' . $_SERVER['TMP']);
+        }
     }
     
     if (! is_null($value)) {
@@ -617,7 +626,7 @@ function session($name, $value = null)
 }
 
 // 检查会话参数是否存在
-function issetSession($name)
+function is_session($name)
 {
     if (! isset($_SESSION)) {
         session_start(); // 自动启动会话
@@ -648,7 +657,7 @@ function sendmail(array $config, $to, $subject, $body)
 }
 
 // 发送短信
-function sendsms(array $config, $to, $content)
+function sendsms(array $config, $to, $content, $template = null)
 {
     if (! $to || ! $content) {
         return false;
@@ -662,15 +671,22 @@ function sendsms(array $config, $to, $content)
     $data['Pwd'] = $config['sms_pwd'];
     $data['SignId'] = $config['sms_signid'];
     $data['Content'] = $content;
+    
     $to = str_replace("\r\n", ",", $to); // 替换回车
     $to = str_replace("，", ",", $to); // 替换中文逗号分割符
     $data['Mobile'] = str_replace(" ", "", $to); // 替换空格
     
-    $url = "http://api.feige.ee/SmsService/Send";
+    if ($template) {
+        $data['TemplateId'] = $template;
+        $url = "http://api.feige.ee/SmsService/Template";
+    } else {
+        $url = "http://api.feige.ee/SmsService/Send";
+    }
     if (! ! $res = get_url($url, $data)) {
         $result = json_decode($res);
         if (! ($result->Code === 0)) {
-            error('短信发送失败，' . $result->Message);
+            // error('短信发送失败，' . $result->Message);
+            return false;
         } else {
             return true;
         }

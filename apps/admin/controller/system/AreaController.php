@@ -1,7 +1,6 @@
 <?php
 /**
  * @copyright (C)2016-2099 Hnaoyun Inc.
- * @license This is not a freeware, use is subject to license terms
  * @author XingMeng
  * @email hnxsh@foxmail.com
  * @date 2017年4月3日
@@ -145,7 +144,7 @@ class AreaController extends Controller
                     session('area_map', get_mapping($areas, 'name', 'acode')); // 更新区域代码名称映射表
                     session('area_tree', $model->getUserAreaTree($areas, 0, 'acode', 'pcode', 'son', $acodes)); // 更新当前用户的区域树
                 }
-                $this->log('新增数据区域' . $acode . '成功！');
+                $this->addLog('新增数据区域' . $acode . '成功！');
                 path_delete(RUN_PATH . '/config'); // 清理缓存的配置文件
                 if (! ! $backurl = get('backurl')) {
                     success('新增成功！', base64_decode($backurl));
@@ -153,7 +152,7 @@ class AreaController extends Controller
                     success('新增成功！', url('/admin/Area/index'));
                 }
             } else {
-                $this->log('新增数据区域' . $acode . '失败！');
+                $this->addLog('新增数据区域' . $acode . '失败！');
                 error('新增失败！', - 1);
             }
         } else {
@@ -205,11 +204,11 @@ class AreaController extends Controller
         
         if ($this->model->delArea($acode)) {
             path_delete(RUN_PATH . '/config'); // 清理缓存的配置文件
-            $this->log('删除数据区域' . $acode . '成功！');
+            $this->addLog('删除数据区域' . $acode . '成功！');
             session_unset();
             success('删除成功,请重新登录', url('/admin/index/index'));
         } else {
-            $this->log('删除数据区域' . $acode . '失败！');
+            $this->addLog('删除数据区域' . $acode . '失败！');
             error('删除失败，请核对是否为默认区域！', - 1);
         }
     }
@@ -282,7 +281,7 @@ class AreaController extends Controller
                     session('area_map', get_mapping($areas, 'name', 'acode')); // 更新区域代码名称映射表
                     session('area_tree', $model->getUserAreaTree($areas, 0, 'acode', 'pcode', 'son', $acodes)); // 更新当前用户的区域树
                 }
-                $this->log('修改数据区域' . $acode . '成功！');
+                $this->addLog('修改数据区域' . $acode . '成功！');
                 path_delete(RUN_PATH . '/config'); // 清理缓存的配置文件
                 if (! ! $backurl = get('backurl')) {
                     success('修改成功！', base64_decode($backurl));

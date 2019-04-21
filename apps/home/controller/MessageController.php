@@ -1,7 +1,6 @@
 <?php
 /**
  * @copyright (C)2016-2099 Hnaoyun Inc.
- * @license This is not a freeware, use is subject to license terms
  * @author XingMeng
  * @email hnxsh@foxmail.com
  * @date 2018年3月5日
@@ -77,7 +76,7 @@ class MessageController extends Controller
             
             if ($this->model->addMessage($data)) {
                 session('lastsub', time()); // 记录最后提交时间
-                $this->log('留言提交成功！');
+                $this->addLog('留言提交成功！');
                 if ($this->config('message_send_mail') && $this->config('message_send_to')) {
                     $mail_subject = "【PbootCMS】您有新的表单数据，请注意查收！";
                     $mail_body .= '<br>来自网站 ' . get_http_url() . ' （' . date('Y-m-d H:i:s') . '）';
@@ -85,7 +84,7 @@ class MessageController extends Controller
                 }
                 alert_location('提交成功！', '-1', 1);
             } else {
-                $this->log('留言提交失败！');
+                $this->addLog('留言提交失败！');
                 alert_back('提交失败！');
             }
         } else {

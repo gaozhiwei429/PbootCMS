@@ -1,7 +1,6 @@
 <?php
 /**
  * @copyright (C)2016-2099 Hnaoyun Inc.
- * @license This is not a freeware, use is subject to license terms
  * @author XingMeng
  * @email hnxsh@foxmail.com
  * @date 2017年4月3日
@@ -72,7 +71,7 @@ class UserController extends Controller
             }
             
             if (! preg_match('/^[\x{4e00}-\x{9fa5}\w\-\.@]+$/u', $username)) {
-                json(0, '用户名含有不允许的特殊字符！');
+                alert_back('用户名含有不允许的特殊字符！');
             }
             
             // 检查编码重复
@@ -102,14 +101,14 @@ class UserController extends Controller
             
             // 执行添加
             if ($this->model->addUser($data, $roles)) {
-                $this->log('新增用户' . $ucode . '成功！');
+                $this->addLog('新增用户' . $ucode . '成功！');
                 if (! ! $backurl = get('backurl')) {
                     success('新增成功！', base64_decode($backurl));
                 } else {
                     success('新增成功！', url('/admin/User/index'));
                 }
             } else {
-                $this->log('新增用户' . $ucode . '失败！');
+                $this->addLog('新增用户' . $ucode . '失败！');
                 error('新增失败', - 1);
             }
         } else {
@@ -129,10 +128,10 @@ class UserController extends Controller
             error('传递的参数值错误！', - 1);
         }
         if ($this->model->delUser($ucode)) {
-            $this->log('删除用户' . $ucode . '成功！');
+            $this->addLog('删除用户' . $ucode . '成功！');
             success('删除成功！', - 1);
         } else {
-            $this->log('删除用户' . $ucode . '失败！');
+            $this->addLog('删除用户' . $ucode . '失败！');
             error('删除失败', - 1);
         }
     }
@@ -171,7 +170,7 @@ class UserController extends Controller
             }
             
             if (! preg_match('/^[\x{4e00}-\x{9fa5}\w\-\.@]+$/u', $username)) {
-                json(0, '用户名含有不允许的特殊字符！');
+                alert_back('用户名含有不允许的特殊字符！');
             }
             
             // 检查用户名重复
@@ -199,7 +198,7 @@ class UserController extends Controller
             
             // 执行添加
             if ($this->model->modUser($ucode, $data, $roles)) {
-                $this->log('修改用户' . $ucode . '成功！');
+                $this->addLog('修改用户' . $ucode . '成功！');
                 if (! ! $backurl = get('backurl')) {
                     success('修改成功！', base64_decode($backurl));
                 } else {

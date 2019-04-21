@@ -1,7 +1,6 @@
 <?php
 /**
  * @copyright (C)2016-2099 Hnaoyun Inc.
- * @license This is not a freeware, use is subject to license terms
  * @author XingMeng
  * @email hnxsh@foxmail.com
  * @date 2017年4月3日
@@ -81,14 +80,14 @@ class RoleController extends Controller
             
             // 执行添加
             if ($this->model->addRole($data, $acodes, $levels)) {
-                $this->log('修改角色' . $rcode . '成功！');
+                $this->addLog('修改角色' . $rcode . '成功！');
                 if (! ! $backurl = get('backurl')) {
                     success('新增成功！', base64_decode($backurl));
                 } else {
                     success('新增成功！', url('admin/Role/index'));
                 }
             } else {
-                $this->log('修改角色' . $rcode . '失败！');
+                $this->addLog('修改角色' . $rcode . '失败！');
                 error('新增失败！', - 1);
             }
         } else {
@@ -193,10 +192,10 @@ class RoleController extends Controller
             error('传递的参数值错误！', - 1);
         }
         if ($this->model->delRole($rcode)) {
-            $this->log('删除角色' . $rcode . '成功！');
+            $this->addLog('删除角色' . $rcode . '成功！');
             success('删除成功！', - 1);
         } else {
-            $this->log('删除角色' . $rcode . '失败！');
+            $this->addLog('删除角色' . $rcode . '失败！');
             error('删除失败！', - 1);
         }
     }
@@ -229,7 +228,7 @@ class RoleController extends Controller
             
             // 执行修改
             if ($this->model->modRole($rcode, $data, $acodes, $levels)) {
-                $this->log('修改角色' . $rcode . '成功！');
+                $this->addLog('修改角色' . $rcode . '成功！');
                 if (! ! $backurl = get('backurl')) {
                     success('修改成功！', base64_decode($backurl));
                 } else {

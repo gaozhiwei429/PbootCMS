@@ -1,7 +1,6 @@
 <?php
 /**
  * @copyright (C)2016-2099 Hnaoyun Inc.
- * @license This is not a freeware, use is subject to license terms
  * @author XingMeng
  * @email hnxsh@foxmail.com
  * @date 2017年11月5日
@@ -29,28 +28,21 @@ class Response
     }
 
     // 服务端API返回JSON数据
-    public static function json($code, $data)
+    public static function json($code, $data, $end = false)
     {
-        @ob_clean();
         $output['code'] = $code ?: 0;
         $output['data'] = $data ?: array();
-        
-        if (defined('ROWTOTAL')) {
-            $output['rowtotal'] = ROWTOTAL;
-        } else {
-            if (is_array($data) || is_object($data)) {
-                $output['rowtotal'] = count($data);
-            } else {
-                $output['rowtotal'] = 1;
-            }
-        }
         
         if (PHP_VERSION >= 5.4) { // 中文不编码 5.4+
             $option = JSON_UNESCAPED_UNICODE;
         } else {
             $option = JSON_HEX_TAG;
         }
-        echo json_encode($output, $option);
-        exit();
+        if ($end) {
+            echo json_encode($output, $option);
+            exit();
+        } else {
+            return json_encode($output, $option);
+        }
     }
 }

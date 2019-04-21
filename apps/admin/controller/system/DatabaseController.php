@@ -1,7 +1,6 @@
 <?php
 /**
  * @copyright (C)2016-2099 Hnaoyun Inc.
- * @license This is not a freeware, use is subject to license terms
  * @author XingMeng
  * @email hnxsh@foxmail.com
  * @date 2017年5月9日
@@ -59,10 +58,10 @@ class DatabaseController extends Controller
                 if (! $tables)
                     alert_back('请选择数据表！');
                 if ($this->model->optimize(implode(',', $tables))) {
-                    // $this->log('优化数据库表成功！');
+                    // $this->addLog('优化数据库表成功！');
                     success('优化成功！', - 1);
                 } else {
-                    // $this->log('优化数据库表失败！');
+                    // $this->addLog('优化数据库表失败！');
                     error('优化失败！', - 1);
                 }
                 break;
@@ -71,10 +70,10 @@ class DatabaseController extends Controller
                 if (! $tables)
                     alert_back('请选择数据表！');
                 if ($this->model->repair(implode(',', $tables))) {
-                    // $this->log('修复数据库表成功！');
+                    // $this->addLog('修复数据库表成功！');
                     success('修复成功！', - 1);
                 } else {
-                    // $this->log('修复数据库表失败！');
+                    // $this->addLog('修复数据库表失败！');
                     error('修复失败！', - 1);
                 }
                 break;
@@ -83,28 +82,28 @@ class DatabaseController extends Controller
                 if (! $tables)
                     alert_back('请选择数据表！');
                 if ($this->backupTable($tables)) {
-                    $this->log('备份数据库表成功！');
+                    $this->addLog('备份数据库表成功！');
                     success('备份表成功！', - 1);
                 } else {
-                    $this->log('备份数据库表失败！');
+                    $this->addLog('备份数据库表失败！');
                     error('备份失败！', - 1);
                 }
                 break;
             case 'bfdb':
                 if ($this->backupDB()) {
-                    $this->log('备份数据库成功！');
+                    $this->addLog('备份数据库成功！');
                     success('备份数据库成功！', - 1);
                 } else {
-                    $this->log('备份数据库失败！');
+                    $this->addLog('备份数据库失败！');
                     error('备份失败！', - 1);
                 }
                 break;
             case 'bfsqlite':
                 if (copy(DOC_PATH . $this->dbauth['dbname'], DOC_PATH . STATIC_DIR . '/backup/sql/' . date('YmdHis') . '_' . basename($this->dbauth['dbname']))) {
-                    $this->log('备份数据库成功！');
+                    $this->addLog('备份数据库成功！');
                     success('备份数据库成功！', - 1);
                 } else {
-                    $this->log('备份数据库失败！');
+                    $this->addLog('备份数据库失败！');
                     error('备份失败！', - 1);
                 }
                 break;

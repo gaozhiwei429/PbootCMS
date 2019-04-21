@@ -1,7 +1,6 @@
 <?php
 /**
  * @copyright (C)2016-2099 Hnaoyun Inc.
- * @license This is not a freeware, use is subject to license terms
  * @author XingMeng
  * @email hnxsh@foxmail.com
  * @date 2018年5月28日 
@@ -82,14 +81,14 @@ class FormController extends Controller
                 }
                 
                 if ($this->model->addForm($data)) {
-                    $this->log('新增自定义表单成功！');
+                    $this->addLog('新增自定义表单成功！');
                     if (! ! $backurl = get('backurl')) {
                         success('新增成功！', base64_decode($backurl));
                     } else {
                         success('新增成功！', url('/admin/Form/index'));
                     }
                 } else {
-                    $this->log('新增自定义表单失败！');
+                    $this->addLog('新增自定义表单失败！');
                     error('新增失败！', - 1);
                 }
             } else {
@@ -145,14 +144,14 @@ class FormController extends Controller
                 
                 // 执行自定义表单记录添加
                 if ($this->model->addFormField($data)) {
-                    $this->log('新增表单字段成功！');
+                    $this->addLog('新增表单字段成功！');
                     if (! ! $backurl = get('backurl')) {
                         success('新增成功！', base64_decode($backurl));
                     } else {
                         success('新增成功！', url('/admin/Form/index/fcode/' . $fcode . '/action/showfield'));
                     }
                 } else {
-                    $this->log('新增表单字段失败！');
+                    $this->addLog('新增表单字段失败！');
                     error('新增失败！', - 1);
                 }
             }
@@ -179,10 +178,10 @@ class FormController extends Controller
             if ($this->model->delForm($id)) {
                 $this->model->delFormFieldByCode($fcode); // 删除字段记录
                 $this->model->amd("DROP TABLE IF EXISTS $table"); // 删除表
-                $this->log('删除自定义表单' . $id . '成功！');
+                $this->addLog('删除自定义表单' . $id . '成功！');
                 success('删除成功！', - 1);
             } else {
-                $this->log('删除自定义表单' . $id . '失败！');
+                $this->addLog('删除自定义表单' . $id . '失败！');
                 error('删除失败！', - 1);
             }
         } elseif (get('action') == 'deldata') {
@@ -192,10 +191,10 @@ class FormController extends Controller
             }
             $table = $this->model->getFormTableByCode($fcode);
             if ($this->model->delFormData($table, $id)) {
-                $this->log('删除表单数据' . $id . '成功！');
+                $this->addLog('删除表单数据' . $id . '成功！');
                 success('删除成功！', - 1);
             } else {
-                $this->log('删除表单数据' . $id . '失败！');
+                $this->addLog('删除表单数据' . $id . '失败！');
                 error('删除失败！', - 1);
             }
         } else {
@@ -216,10 +215,10 @@ class FormController extends Controller
                         $result = $this->model->amd("ALTER TABLE $table DROP COLUMN $name");
                     }
                 }
-                $this->log('删除自定义表单' . $id . '成功！');
+                $this->addLog('删除自定义表单' . $id . '成功！');
                 success('删除成功！', - 1);
             } else {
-                $this->log('删除自定义表单' . $id . '失败！');
+                $this->addLog('删除自定义表单' . $id . '失败！');
                 error('删除失败！', - 1);
             }
         }
@@ -258,7 +257,7 @@ class FormController extends Controller
                 
                 // 执行修改
                 if ($this->model->modForm($id, $data)) {
-                    $this->log('修改自定义表单' . $id . '成功！');
+                    $this->addLog('修改自定义表单' . $id . '成功！');
                     if (! ! $backurl = get('backurl')) {
                         success('修改成功！', base64_decode($backurl));
                     } else {
@@ -288,7 +287,7 @@ class FormController extends Controller
                 
                 // 执行修改
                 if ($this->model->modFormField($id, $data)) {
-                    $this->log('修改表单字段' . $id . '成功！');
+                    $this->addLog('修改表单字段' . $id . '成功！');
                     if (! ! $backurl = get('backurl')) {
                         success('修改成功！', base64_decode($backurl));
                     } else {

@@ -1,7 +1,6 @@
 <?php
 /**
  * @copyright (C)2016-2099 Hnaoyun Inc.
- * @license This is not a freeware, use is subject to license terms
  * @author XingMeng
  * @email hnxsh@foxmail.com
  * @date 2017年4月3日
@@ -133,14 +132,14 @@ class MenuController extends Controller
             
             // 执行添加
             if ($this->model->addMenu($data, $actions)) {
-                $this->log('新增菜单' . $mcode . '成功！');
+                $this->addLog('新增菜单' . $mcode . '成功！');
                 if (! ! $backurl = get('backurl')) {
                     success('新增成功！', base64_decode($backurl));
                 } else {
                     success('新增成功！', url('admin/Menu/index'));
                 }
             } else {
-                $this->log('新增菜单' . $mcode . '失败！');
+                $this->addLog('新增菜单' . $mcode . '失败！');
                 error('新增失败！', - 1);
             }
         } else {
@@ -192,10 +191,10 @@ class MenuController extends Controller
             error('传递的参数值错误！', - 1);
         }
         if ($this->model->delMenu($mcode)) {
-            $this->log('删除菜单' . $mcode . '成功！');
+            $this->addLog('删除菜单' . $mcode . '成功！');
             success('删除成功！', - 1);
         } else {
-            $this->log('删除菜单' . $mcode . '失败！');
+            $this->addLog('删除菜单' . $mcode . '失败！');
             error('删除失败！', - 1);
         }
     }
@@ -210,10 +209,10 @@ class MenuController extends Controller
         // 单独修改状态
         if (($field = get('field', 'var')) && ! is_null($value = get('value', 'var'))) {
             if ($this->model->modMenu($mcode, "$field='$value',update_user='" . session('username') . "'")) {
-                $this->log('修改菜单' . $mcode . '状态' . $value . '成功！');
+                $this->addLog('修改菜单' . $mcode . '状态' . $value . '成功！');
                 location(- 1);
             } else {
-                $this->log('修改菜单' . $mcode . '状态' . $value . '失败！');
+                $this->addLog('修改菜单' . $mcode . '状态' . $value . '失败！');
                 alert_back('修改失败！');
             }
         }
@@ -255,7 +254,7 @@ class MenuController extends Controller
             
             // 执行修改
             if ($this->model->modMenu($mcode, $data, $actions)) {
-                $this->log('修改菜单' . $mcode . '成功！');
+                $this->addLog('修改菜单' . $mcode . '成功！');
                 if (! ! $backurl = get('backurl')) {
                     success('修改成功！', base64_decode($backurl));
                 } else {

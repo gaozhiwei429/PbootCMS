@@ -1,7 +1,6 @@
 <?php
 /**
  * @copyright (C)2016-2099 Hnaoyun Inc.
- * @license This is not a freeware, use is subject to license terms
  * @author XingMeng
  * @email hnxsh@foxmail.com
  * @date 2016年11月6日
@@ -100,6 +99,17 @@ class Paging
         
         // 返回限制语句
         return ($this->page - 1) * $this->pageSize + ($this->start - 1) . ",$this->pageSize";
+    }
+
+    // 快速分页字符代码
+    public function quikLimit()
+    {
+        $page = get('page', 'int') ?: 1;
+        if ($page < 1) {
+            $page = 0;
+        }
+        $pagesize = config::get('pagesize') ?: 15;
+        return ($page - 1) * $pagesize . ",$pagesize";
     }
 
     // 注入页面相关信息,用于模板调用，如：{$pagebar}调用分页条

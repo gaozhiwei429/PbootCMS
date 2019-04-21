@@ -1,7 +1,6 @@
 <?php
 /**
  * @copyright (C)2016-2099 Hnaoyun Inc.
- * @license This is not a freeware, use is subject to license terms
  * @author XingMeng
  * @email hnxsh@foxmail.com
  * @date 2018年3月1日
@@ -71,14 +70,14 @@ class ModelController extends Controller
             
             // 执行添加
             if ($this->model->addModel($data)) {
-                $this->log('新增内容模型成功！');
+                $this->addLog('新增内容模型成功！');
                 if (! ! $backurl = get('backurl')) {
                     success('新增成功！', base64_decode($backurl));
                 } else {
                     success('新增成功！', url('/admin/Model/index'));
                 }
             } else {
-                $this->log('新增内容模型失败！');
+                $this->addLog('新增内容模型失败！');
                 error('新增失败！', - 1);
             }
         } else {
@@ -95,10 +94,10 @@ class ModelController extends Controller
         }
         
         if ($this->model->delModel($id)) {
-            $this->log('删除内容模型' . $id . '成功！');
+            $this->addLog('删除内容模型' . $id . '成功！');
             success('删除成功！', - 1);
         } else {
-            $this->log('删除内容模型' . $id . '失败！');
+            $this->addLog('删除内容模型' . $id . '失败！');
             error('删除失败！', - 1);
         }
     }
@@ -145,7 +144,7 @@ class ModelController extends Controller
             
             // 执行添加
             if ($this->model->modModel($id, $data)) {
-                $this->log('修改内容模型' . $id . '成功！');
+                $this->addLog('修改内容模型' . $id . '成功！');
                 if (! ! $backurl = get('backurl')) {
                     success('修改成功！', base64_decode($backurl));
                 } else {

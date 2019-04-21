@@ -1,7 +1,6 @@
 <?php
 /**
  * @copyright (C)2016-2099 Hnaoyun Inc.
- * @license This is not a freeware, use is subject to license terms
  * @author XingMeng
  * @email hnxsh@foxmail.com
  * @date 2016年12月25日
@@ -11,10 +10,22 @@ namespace app\common;
 
 use core\basic\Controller;
 
-class AdminController extends Controller
+class CommonController extends Controller
 {
 
     public function __construct()
+    {
+        cache_config();
+        if (M == 'home') {
+            $this->home();
+        } elseif (M == 'api') {
+            $this->api($this->config());
+        } else {
+            $this->admin();
+        }
+    }
+
+    private function admin()
     {
         // 登录后注入菜单信息
         if ($this->checkLogin()) {
@@ -37,9 +48,8 @@ class AdminController extends Controller
         }
         
         // 站点基础信息
-        $model = new AdminModel();
+        $model = new CommonModel();
         session('site', $model->getSite());
-        cache_config();
         
         // 内容模型菜单注入
         $models = model('admin.content.Model');
@@ -62,12 +72,85 @@ class AdminController extends Controller
         }
         
         // 非上传接口提交后或页面首次加载时，生成页面验证码
-        if (($_POST || ! issetSession('formcheck')) && ! (C == 'Index' && F == 'upload') && ! (C == 'Index' && F == 'login')) {
+        if (($_POST || ! is_session('formcheck')) && ! (C == 'Index' && F == 'upload') && ! (C == 'Index' && F == 'login')) {
             session('formcheck', get_uniqid());
         }
         
         $this->assign('formcheck', session('formcheck')); // 注入formcheck模板变量
         $this->assign('backurl', base64_encode(URL)); // 注入编码后的回跳地址
+    }
+
+    // 前端模块
+    private function home()
+    {
+        // 自动缓存基础信息
+        cache_config();
+        
+        // 手机自适应主题
+        if ($this->config('open_wap')) {
+            if ($this->config('wap_domain') && $this->config('wap_domain') == get_http_host()) {
+                $this->setTheme(get_theme() . '/wap'); // 已绑域名并且一致则自动手机版本
+            } elseif (is_mobile() && $this->config('wap_domain') && $this->config('wap_domain') != get_http_host()) {
+                if (is_https()) {
+                    $pre = 'https://';
+                } else {
+                    $pre = 'http://';
+                }
+                header('Location:' . $pre . $this->config('wap_domain') . URL); // 手机访问并且绑定了域名，但是访问域名不一致则跳转
+            } elseif (is_mobile()) { // 其他情况手机访问则自动手机版本
+                $this->setTheme(get_theme() . '/wap');
+            } else { // 其他情况，电脑版本
+                $this->setTheme(get_theme());
+            }
+        } else { // 未开启手机，则一律电脑版本
+            $this->setTheme(get_theme());
+        }
+    }
+
+    /**
+     * 客户端发起请求必须包含appid、timestamp、signature三个参数;
+     * signature通过appid、secret、timestamp连接为一个字符串,然后进行双层md5加密生成;
+     */
+    public static function api($config)
+    {
+        if (! isset($config['api_open']) || ! $config['api_open']) {
+            return json(0, '系统尚未开启API功能，请到后台配置');
+        }
+        
+        // 验证总开关
+        if ($config['api_auth']) {
+            
+            // 判断用户
+            if (! $config['api_appid']) {
+                return json(0, '请求失败：管理后台接口认证用户配置有误');
+            }
+            
+            // 判断密钥
+            if (! $config['api_secret']) {
+                return json(0, '请求失败：管理后台接口认证密钥配置有误');
+            }
+            
+            // 获取参数
+            if (! $appid = request('appid')) {
+                return json(0, '请求失败：未检查到appid参数');
+            }
+            if (! $timestamp = request('timestamp')) {
+                return json(0, '请求失败：未检查到timestamp参数');
+            }
+            if (! $signature = request('signature')) {
+                return json(0, '请求失败：未检查到signature参数');
+            }
+            
+            // 验证时间戳
+            if (strpos($_SERVER['HTTP_REFERER'], get_http_url()) === false && time() - $timestamp > 15) { // 请求时间戳认证，不得超过15秒
+                return json(0, '请求失败：接口时间戳验证失败！');
+            }
+            
+            // 验证签名
+            if ($signature != md5(md5($config['api_appid'] . $config['api_secret'] . $timestamp))) {
+                error('请求失败：接口签名信息错误！');
+            }
+        }
     }
 
     // 后台用户登录状态检查

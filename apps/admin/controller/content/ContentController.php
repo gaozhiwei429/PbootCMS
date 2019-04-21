@@ -1,7 +1,6 @@
 <?php
 /**
  * @copyright (C)2016-2099 Hnaoyun Inc.
- * @license This is not a freeware, use is subject to license terms
  * @author XingMeng
  * @email hnxsh@foxmail.com
  * @date  2017年12月15日
@@ -172,19 +171,19 @@ class ContentController extends Controller
                 if (isset($data2)) {
                     if (! $this->model->addContentExt($data2)) {
                         $this->model->delContent($id);
-                        $this->log('新增文章失败！');
+                        $this->addLog('新增文章失败！');
                         error('新增失败！', - 1);
                     }
                 }
                 
-                $this->log('新增文章成功！');
+                $this->addLog('新增文章成功！');
                 if (! ! $backurl = get('backurl')) {
                     success('新增成功！', base64_decode($backurl));
                 } else {
                     success('新增成功！', url('/admin/Content/index/mcode/' . get('mcode')));
                 }
             } else {
-                $this->log('新增文章失败！');
+                $this->addLog('新增文章失败！');
                 error('新增失败！', - 1);
             }
         } else {
@@ -241,10 +240,10 @@ class ContentController extends Controller
             if (! ! $list = post('list')) {
                 if ($this->model->delContentList($list)) {
                     $this->model->delContentExtList($list);
-                    $this->log('批量删除文章成功！');
+                    $this->addLog('批量删除文章成功！');
                     success('批量删除成功！', - 1);
                 } else {
-                    $this->log('批量删除文章失败！');
+                    $this->addLog('批量删除文章失败！');
                     error('批量删除失败！', - 1);
                 }
             } else {
@@ -258,10 +257,10 @@ class ContentController extends Controller
         
         if ($this->model->delContent($id)) {
             $this->model->delContentExt($id);
-            $this->log('删除文章' . $id . '成功！');
+            $this->addLog('删除文章' . $id . '成功！');
             success('删除成功！', - 1);
         } else {
-            $this->log('删除文章' . $id . '失败！');
+            $this->addLog('删除文章' . $id . '失败！');
             error('删除失败！', - 1);
         }
     }
@@ -280,7 +279,7 @@ class ContentController extends Controller
                                 $sorting[$key] = 255;
                             $this->model->modContent($value, "sorting=" . $sorting[$key]);
                         }
-                        $this->log('修改内容排序成功！');
+                        $this->addLog('修改内容排序成功！');
                         success('修改成功！', - 1);
                     } else {
                         alert_back('排序失败，无任何内容！');
@@ -296,7 +295,7 @@ class ContentController extends Controller
                         alert_back('请选择目标栏目！');
                     }
                     if ($this->model->copyContent($list, $scode)) {
-                        $this->log('复制内容成功！');
+                        $this->addLog('复制内容成功！');
                         success('复制内容成功！', - 1);
                     } else {
                         alert_back('复制内容失败！');
@@ -313,7 +312,7 @@ class ContentController extends Controller
                     }
                     
                     if ($this->model->modContent($list, "scode='" . $scode . "'")) {
-                        $this->log('移动内容成功！');
+                        $this->addLog('移动内容成功！');
                         success('移动内容成功！', - 1);
                     } else {
                         alert_back('移动内容失败！');
@@ -332,7 +331,7 @@ class ContentController extends Controller
                     $api = "http://data.zz.baidu.com/urls?site=$domain&token=$token";
                     foreach ($list as $key => $value) {
                         $url = $domain . url('/home/content/index/id/' . $value);
-                        $this->log('百度推送：' . $url);
+                        $this->addLog('百度推送：' . $url);
                         $urls[] = $url;
                     }
                     $result = post_baidu($api, $urls);
@@ -358,7 +357,7 @@ class ContentController extends Controller
                     $api = "http://data.zz.baidu.com/urls?appid=$appid&token=$token&type=realtime";
                     foreach ($list as $key => $value) {
                         $url = $domain . url('/home/content/index/id/' . $value);
-                        $this->log('熊掌号推送：' . $url);
+                        $this->addLog('熊掌号推送：' . $url);
                         $urls[] = $url;
                     }
                     $result = post_baidu($api, $urls);
@@ -485,7 +484,7 @@ class ContentController extends Controller
                     }
                 }
                 
-                $this->log('修改文章' . $id . '成功！');
+                $this->addLog('修改文章' . $id . '成功！');
                 if (! ! $backurl = get('backurl')) {
                     success('修改成功！', base64_decode($backurl));
                 } else {

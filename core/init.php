@@ -1,7 +1,6 @@
 <?php
 /**
  * @copyright (C)2016-2099 Hnaoyun Inc.
- * @license This is not a freeware, use is subject to license terms
  * @author XingMeng
  * @email hnxsh@foxmail.com
  * @date 2017年2月7日
@@ -83,12 +82,15 @@ set_error_handler('core\basic\Basic::errorHandler');
 // 设置异常捕获函数
 set_exception_handler('core\basic\Basic::exceptionHandler');
 
+// 注册php中止时执行的函数
+register_shutdown_function('core\basic\Basic::shutdownFunction');
+
 // 调试模式设置错误报告级别并进行环境检查
 if (Config::get('debug')) {
     ini_set('display_errors', 1); // 开启显示错误
     error_reporting(E_ALL ^ E_WARNING ^ E_NOTICE);
 } else {
-    error_reporting(0);
+    error_reporting(E_ERROR);
 }
 
 // 环境检查

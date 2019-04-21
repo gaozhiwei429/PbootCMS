@@ -1,7 +1,6 @@
 <?php
 /**
  * @copyright (C)2016-2099 Hnaoyun Inc.
- * @license This is not a freeware, use is subject to license terms
  * @author XingMeng
  * @email hnxsh@foxmail.com
  * @date 2018年8月14日
@@ -55,7 +54,7 @@ class UpgradeController extends Controller
         // 清理目录，检查下载目录及备份目录
         path_delete(RUN_PATH . '/upgrade', true);
         if (! check_dir(RUN_PATH . '/upgrade', true)) {
-            json(0, '目录写入权限不足，无法正常升级！' . RUN_PATH . '/upgrade');
+            return json(0, '目录写入权限不足，无法正常升级！' . RUN_PATH . '/upgrade');
         }
         check_dir(DOC_PATH . STATIC_DIR . '/backup/upgrade', true);
         
@@ -82,9 +81,9 @@ class UpgradeController extends Controller
             }
         }
         if (! $upfile) {
-            json(1, '您的系统无任何文件需要更新！');
+            return json(1, '您的系统无任何文件需要更新！');
         } else {
-            json(1, $upfile);
+            return json(1, $upfile);
         }
     }
 
@@ -104,7 +103,7 @@ class UpgradeController extends Controller
                     $path = RUN_PATH . '/upgrade' . $value;
                     // 自动创建目录
                     if (! check_dir(dirname($path), true)) {
-                        json(0, '目录写入权限不足，无法下载升级文件！' . dirname($path));
+                        return json(0, '目录写入权限不足，无法下载升级文件！' . dirname($path));
                     }
                     
                     // 定义执行下载的类型
@@ -118,15 +117,15 @@ class UpgradeController extends Controller
                     }
                 }
                 if ($len == 1) {
-                    json(1, "更新文件 " . basename($value) . " 下载成功!");
+                    return json(1, "更新文件 " . basename($value) . " 下载成功!");
                 } else {
-                    json(1, "更新文件" . basename($value) . "等文件全部下载成功!");
+                    return json(1, "更新文件" . basename($value) . "等文件全部下载成功!");
                 }
             } else {
-                json(0, '请选择要下载的文件！');
+                return json(0, '请选择要下载的文件！');
             }
         } else {
-            json(0, '请使用POST提交请求！');
+            return json(0, '请使用POST提交请求！');
         }
     }
 
@@ -147,7 +146,7 @@ class UpgradeController extends Controller
                         $des_path = ROOT_PATH . $value;
                         $back_path = DOC_PATH . STATIC_DIR . '/backup/upgrade/' . $backdir . $value;
                         if (! check_dir(dirname($des_path), true)) {
-                            json(0, '目录写入权限不足，无法正常升级！' . dirname($des_path));
+                            return json(0, '目录写入权限不足，无法正常升级！' . dirname($des_path));
                         }
                         if (file_exists($des_path)) { // 文件存在时执行备份
                             check_dir(dirname($back_path), true);
@@ -177,11 +176,11 @@ class UpgradeController extends Controller
                         if (file_exists($path)) {
                             $sql = file_get_contents($path);
                             if (! $this->upsql($sql)) {
-                                $this->log("数据库 $value 更新失败!");
-                                json(0, "数据库" . basename($value) . " 更新失败！");
+                                $this->addLog("数据库 $value 更新失败!");
+                                return json(0, "数据库" . basename($value) . " 更新失败！");
                             }
                         } else {
-                            json(0, "数据库文件" . basename($value) . "不存在！");
+                            return json(0, "数据库文件" . basename($value) . "不存在！");
                         }
                     }
                 }
@@ -190,8 +189,8 @@ class UpgradeController extends Controller
                 if (isset($files)) {
                     foreach ($files as $value) {
                         if (! copy($value['sfile'], $value['dfile'])) {
-                            $this->log("文件 " . $value['dfile'] . " 更新失败!");
-                            json(0, "文件 " . basename($value['dfile']) . " 更新失败，请重试!");
+                            $this->addLog("文件 " . $value['dfile'] . " 更新失败!");
+                            return json(0, "文件 " . basename($value['dfile']) . " 更新失败，请重试!");
                         }
                     }
                 }
@@ -202,10 +201,10 @@ class UpgradeController extends Controller
                 path_delete(RUN_PATH . '/complite');
                 path_delete(RUN_PATH . '/config');
                 
-                $this->log("系统更新成功!");
-                json(1, '系统更新成功！');
+                $this->addLog("系统更新成功!");
+                return json(1, '系统更新成功！');
             } else {
-                json(0, '请选择要更新的文件！');
+                return json(0, '请选择要更新的文件！');
             }
         }
     }
@@ -253,14 +252,14 @@ class UpgradeController extends Controller
                 if (is_array($rs->data)) {
                     return $rs->data;
                 } else {
-                    json(1, $rs->data);
+                    return json(1, $rs->data);
                 }
             } else {
-                json(0, $rs->data);
+                return json(0, $rs->data);
             }
         } else {
-            $this->log('连接更新服务器发生错误，请稍后再试！');
-            json(0, '连接更新服务器发生错误，请稍后再试！');
+            $this->addLog('连接更新服务器发生错误，请稍后再试！');
+            return json(0, '连接更新服务器发生错误，请稍后再试！');
         }
     }
 
@@ -273,17 +272,17 @@ class UpgradeController extends Controller
         if (! ! $rs = json_decode(get_url($url, $data, '', true))) {
             if ($rs->code) {
                 if (! file_put_contents($des, base64_decode($rs->data))) {
-                    $this->log("更新文件  " . $file . " 下载失败!");
-                    json(0, "更新文件 " . $file . " 下载失败!");
+                    $this->addLog("更新文件  " . $file . " 下载失败!");
+                    return json(0, "更新文件 " . $file . " 下载失败!");
                 } else {
                     return true;
                 }
             } else {
-                json(0, $rs->data);
+                return json(0, $rs->data);
             }
         } else {
-            $this->log("更新文件 " . $file . " 获取失败!");
-            json(0, "更新文件 " . $file . " 获取失败!");
+            $this->addLog("更新文件 " . $file . " 获取失败!");
+            return json(0, "更新文件 " . $file . " 获取失败!");
         }
     }
 
@@ -296,8 +295,8 @@ class UpgradeController extends Controller
             while (! feof($sfile)) {
                 $fwrite = fwrite($dfile, fread($sfile, 1024 * 8), 1024 * 8);
                 if ($fwrite === false) {
-                    $this->log("更新文件 " . $file . " 下载失败!");
-                    json(0, "更新文件 " . $file . " 下载失败!");
+                    $this->addLog("更新文件 " . $file . " 下载失败!");
+                    return json(0, "更新文件 " . $file . " 下载失败!");
                 }
             }
             if ($sfile) {
@@ -308,8 +307,8 @@ class UpgradeController extends Controller
             }
             return true;
         } else {
-            $this->log("更新文件 " . $file . " 获取失败!");
-            json(0, "更新文件 " . $file . " 获取失败!");
+            $this->addLog("更新文件 " . $file . " 获取失败!");
+            return json(0, "更新文件 " . $file . " 获取失败!");
         }
     }
 

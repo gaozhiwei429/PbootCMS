@@ -1,7 +1,6 @@
 <?php
 /**
  * @copyright (C)2016-2099 Hnaoyun Inc.
- * @license This is not a freeware, use is subject to license terms
  * @author XingMeng
  * @email hnxsh@foxmail.com
  * @date 2017年04月17日
@@ -53,7 +52,7 @@ class CompanyController extends Controller
         
         if ($this->model->checkCompany()) {
             if ($this->model->modCompany($data)) {
-                $this->log('修改公司信息成功！');
+                $this->addLog('修改公司信息成功！');
                 success('修改成功！', - 1);
             } else {
                 location(- 1);
@@ -61,7 +60,7 @@ class CompanyController extends Controller
         } else {
             $data['acode'] = session('acode');
             if ($this->model->addCompany($data)) {
-                $this->log('修改公司信息成功！');
+                $this->addLog('修改公司信息成功！');
                 success('修改成功！', - 1);
             } else {
                 location(- 1);

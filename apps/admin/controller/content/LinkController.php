@@ -1,7 +1,6 @@
 <?php
 /**
  * @copyright (C)2016-2099 Hnaoyun Inc.
- * @license This is not a freeware, use is subject to license terms
  * @author XingMeng
  * @email hnxsh@foxmail.com
  * @date 2018年3月1日
@@ -87,14 +86,14 @@ class LinkController extends Controller
             
             // 执行添加
             if ($this->model->addLink($data)) {
-                $this->log('新增友情链接成功！');
+                $this->addLog('新增友情链接成功！');
                 if (! ! $backurl = get('backurl')) {
                     success('新增成功！', base64_decode($backurl));
                 } else {
                     success('新增成功！', url('/admin/Link/index'));
                 }
             } else {
-                $this->log('新增友情链接失败！');
+                $this->addLog('新增友情链接失败！');
                 error('新增失败！', - 1);
             }
         } else {
@@ -111,10 +110,10 @@ class LinkController extends Controller
         }
         
         if ($this->model->delLink($id)) {
-            $this->log('删除友情链接' . $id . '成功！');
+            $this->addLog('删除友情链接' . $id . '成功！');
             success('删除成功！', - 1);
         } else {
-            $this->log('删除友情链接' . $id . '失败！');
+            $this->addLog('删除友情链接' . $id . '失败！');
             error('删除失败！', - 1);
         }
     }
@@ -133,7 +132,7 @@ class LinkController extends Controller
                                 $sorting[$key] = 255;
                             $this->model->modLink($value, "sorting=" . $sorting[$key]);
                         }
-                        $this->log('批量修改链接排序成功！');
+                        $this->addLog('批量修改链接排序成功！');
                         success('修改成功！', - 1);
                     } else {
                         alert_back('排序失败，无任何内容！');
@@ -194,7 +193,7 @@ class LinkController extends Controller
             
             // 执行添加
             if ($this->model->modLink($id, $data)) {
-                $this->log('修改友情链接' . $id . '成功！');
+                $this->addLog('修改友情链接' . $id . '成功！');
                 if (! ! $backurl = get('backurl')) {
                     success('修改成功！', base64_decode($backurl));
                 } else {

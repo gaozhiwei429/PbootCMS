@@ -1,7 +1,6 @@
 <?php
 /**
  * @copyright (C)2016-2099 Hnaoyun Inc.
- * @license This is not a freeware, use is subject to license terms
  * @author XingMeng
  * @email hnxsh@foxmail.com
  * @date 2016年11月6日
@@ -54,9 +53,9 @@ class Check
             check_dir(APP_PATH . '/common', true);
             check_dir(CONF_PATH, true);
         }
-        
         check_dir(RUN_PATH, true);
         check_dir(DOC_PATH . STATIC_DIR . '/upload', true);
+        
         // 目录权限判断
         if (! is_writable(RUN_PATH)) {
             error('缓存目录写入权限不足！' . RUN_PATH);
@@ -95,9 +94,9 @@ class Check
         $apps = Config::get('public_app', true);
         check_dir(APP_CONTROLLER_PATH, true);
         check_file(CONF_PATH . '/config.php', true, "<?php \r\n return array(\r\n\t //'控制项'=>'值' 以分号，分割\r\n);");
-        check_file(APP_CONTROLLER_PATH . '/IndexController.php', true, "<?php \r\r namespace app\\" . M . "\\controller;\r\r use core\\basic\\Controller; \r\r class IndexController extends Controller{\r\r\tpublic function index(){\r\t\t\$this->display('index.html');\r\t} \r\r}");
-        check_file(APP_PATH . '/common/' . ucfirst(M) . 'Controller.php', true, "<?php \r\rnamespace app\\common;\r\ruse core\\basic\\Controller; \r\rclass " . ucfirst(M) . "Controller extends Controller{ \r\r}");
-        // check_file(APP_PATH . '/common/' . ucfirst(M) . 'Model.php', true, "<?php \r\rnamespace app\\common;\r\ruse core\\basic\\Model; \r\rclass " . ucfirst(M) . "Model extends Model{ \r\r}");
+        // check_file(APP_CONTROLLER_PATH . '/IndexController.php', true, "<?php \r\r namespace app\\" . M . "\\controller;\r\r use core\\basic\\Controller; \r\r class IndexController extends Controller{\r\r\tpublic function index(){\r\t\t\$this->display('index.html');\r\t} \r\r}");
+        check_file(APP_PATH . '/common/CommonController.php', true, "<?php \r\rnamespace app\\common;\r\ruse core\\basic\\Controller; \r\rclass CommonCommonController extends Controller{ \r\r}");
+        check_file(APP_PATH . '/common/CommonModel.php', true, "<?php \r\rnamespace app\\common;\r\ruse core\\basic\\Model; \r\rclass CommonModel extends Model{ \r\r}");
     }
 
     // 检查客户端浏览器是否被允许，在同时设置黑白名单时，黑名单具有优先级更高，在设置了白名单时，将只允许白名单访问

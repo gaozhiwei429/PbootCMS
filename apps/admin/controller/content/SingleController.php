@@ -1,7 +1,6 @@
 <?php
 /**
  * @copyright (C)2016-2099 Hnaoyun Inc.
- * @license This is not a freeware, use is subject to license terms
  * @author XingMeng
  * @email hnxsh@foxmail.com
  * @date  2017年12月15日
@@ -54,10 +53,10 @@ class SingleController extends Controller
         }
         
         if ($this->model->delSingle($id)) {
-            $this->log('删除单页内容' . $id . '成功！');
+            $this->addLog('删除单页内容' . $id . '成功！');
             success('删除成功！', - 1);
         } else {
-            $this->log('删除单页内容' . $id . '失败！');
+            $this->addLog('删除单页内容' . $id . '失败！');
             error('删除失败！', - 1);
         }
     }
@@ -195,7 +194,7 @@ class SingleController extends Controller
                     }
                 }
                 
-                $this->log('修改单页内容' . $id . '成功！');
+                $this->addLog('修改单页内容' . $id . '成功！');
                 if (! ! $backurl = get('backurl')) {
                     success('修改成功！', base64_decode($backurl));
                 } else {

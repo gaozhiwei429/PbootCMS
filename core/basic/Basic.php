@@ -1,7 +1,6 @@
 <?php
 /**
  * @copyright (C)2016-2099 Hnaoyun Inc.
- * @license This is not a freeware, use is subject to license terms
  * @author XingMeng
  * @email hnxsh@foxmail.com
  * @date 2017年11月4日
@@ -52,6 +51,12 @@ class Basic
             case E_NOTICE:
                 $err_level = 'NOTICE';
                 break;
+            case E_RECOVERABLE_ERROR:
+            case E_CORE_ERROR:
+            case E_COMPILE_ERROR:
+            case E_USER_ERROR:
+                $err_level = 'FATAL ERROR';
+                break;
             default:
                 $err_level = 'UNKNOW';
                 break;
@@ -62,10 +67,10 @@ class Basic
         $info .= "<p><b>File:</b> $errfile;</p>\n";
         $info .= "<p><b>Line:</b> $errline;</p>\n";
         
-        if ($err_level == 'ERROR' || $err_level == 'UNKNOW') {
-            error($info);
-        } else {
+        if ($err_level == 'WARNING' || $err_level == 'NOTICE') {
             echo $info;
+        } else {
+            error($info);
         }
     }
 
@@ -73,6 +78,20 @@ class Basic
     public static function exceptionHandler($exception)
     {
         error("程序运行异常: " . $exception->getMessage() . "，位置：" . $exception->getFile() . '，第' . $exception->getLine() . '行。');
+    }
+
+    // 致命错误捕获
+    public static function shutdownFunction()
+    {
+        $error = error_get_last();
+        define('E_FATAL', E_ERROR | E_RECOVERABLE_ERROR | E_CORE_ERROR | E_COMPILE_ERROR | E_USER_ERROR);
+        if ($error && ($error["type"] === ($error["type"] & E_FATAL))) {
+            $errno = $error["type"];
+            $errstr = $error["message"];
+            $errfile = $error["file"];
+            $errline = $error["line"];
+            self::errorHandler($errno, $errstr, $errfile, $errline);
+        }
     }
 
     // 会话处理程序设置
@@ -112,7 +131,7 @@ class Basic
         }
     }
 
-    // 自动实例化模型
+    // 实例化模型
     public static function createModel($name, $new = false)
     {
         if (! isset(self::$models[$name]) || $new) {
@@ -130,6 +149,79 @@ class Basic
             self::$models[$name] = new $class_name();
         }
         return self::$models[$name];
+    }
+
+    // 创建数据接口
+    public static function createApi($name, $param = array(), $rsJson = false, $rsArray = false)
+    {
+        // 获取类名
+        if (strpos($name, '.') !== false) {
+            $path = explode('.', $name);
+            $len = count($path); // 第一个为模块 $path[0]，倒数第二个为控制器$path[$i]，倒数第一个为方法$path[$i+1]
+            $class_name = '';
+            for ($i = 1; $i < $len - 2; $i ++) {
+                $class_name .= '\\' . $path[$i];
+            }
+            $class_name = '\\app\\' . $path[0] . '\\model' . $class_name . '\\' . ucfirst($path[$i]) . 'Model';
+        } else {
+            error('调取接口名称不完整！' . $name);
+        }
+        
+        // 实例化类
+        if (isset(self::$models[$name])) {
+            $model = self::$models[$name];
+        } else {
+            $model = new $class_name();
+        }
+        
+        // 单参数时处理
+        if ($param && ! is_array($param)) {
+            $param = array(
+                $param
+            );
+        } elseif (! $param) {
+            $param = array();
+        }
+        
+        // 调取接口方法
+        $json = call_user_func_array(array(
+            $model,
+            $path[$i + 1]
+        ), $param);
+        
+        // 返回结果
+        if ($rsJson) {
+            return $json;
+        } else {
+            if (! ! $rs = json_decode($json, $rsArray)) {
+                return $rs;
+            } else {
+                switch (json_last_error()) {
+                    case JSON_ERROR_NONE:
+                        $err = '请检查返回数据！';
+                        break;
+                    case JSON_ERROR_DEPTH:
+                        $err = '超过最大堆叠深度!';
+                        break;
+                    case JSON_ERROR_STATE_MISMATCH:
+                        $err = '下溢或模式不匹配!';
+                        break;
+                    case JSON_ERROR_CTRL_CHAR:
+                        $err = '发现意外的控制字符!';
+                        break;
+                    case JSON_ERROR_SYNTAX:
+                        $err = '语法错误!';
+                        break;
+                    case JSON_ERROR_UTF8:
+                        $err = '格式不正确的UTF-8字符，可能编码不正确!';
+                        break;
+                    default:
+                        $err = '未知错误！';
+                        break;
+                }
+                error('接口返回数据错误，接口：' . $name . '，JSON解析错误：' . $err);
+            }
+        }
     }
 }
 

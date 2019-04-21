@@ -1,7 +1,6 @@
 <?php
 /**
  * @copyright (C)2016-2099 Hnaoyun Inc.
- * @license This is not a freeware, use is subject to license terms
  * @author XingMeng
  * @email hnxsh@foxmail.com
  * @date 2018年11月11日
@@ -38,12 +37,12 @@ class AboutController extends Controller
                 $data->likeslink = url('/home/Do/likes/id/' . $data->id, false);
                 $data->opposelink = url('/home/Do/oppose/id/' . $data->id, false);
                 $data->content = str_replace(STATIC_DIR . '/upload/', get_http_url() . STATIC_DIR . '/upload/', $data->content);
-                json(1, $data);
+                return json(1, $data);
             } else {
-                json(0, '分类编码为' . $scode . '的内容已经不存在了！');
+                return json(0, '分类编码为' . $scode . '的内容已经不存在了！');
             }
         } else {
-            json(1, '请求错误，传递的内容scode有误！');
+            return json(1, '请求错误，传递的内容scode有误！');
         }
     }
 }

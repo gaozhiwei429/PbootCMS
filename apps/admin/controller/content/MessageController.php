@@ -1,7 +1,6 @@
 <?php
 /**
  * @copyright (C)2016-2099 Hnaoyun Inc.
- * @license This is not a freeware, use is subject to license terms
  * @author XingMeng
  * @email hnxsh@foxmail.com
  * @date 2017年3月29日
@@ -39,10 +38,10 @@ class MessageController extends Controller
         }
         
         if ($this->model->delMessage($id)) {
-            $this->log('删除留言' . $id . '成功！');
+            $this->addLog('删除留言' . $id . '成功！');
             success('删除成功！', - 1);
         } else {
-            $this->log('删除留言' . $id . '失败！');
+            $this->addLog('删除留言' . $id . '失败！');
             error('删除失败！', - 1);
         }
     }
@@ -78,7 +77,7 @@ class MessageController extends Controller
             
             // 执行修改
             if ($this->model->modMessage($id, $data)) {
-                $this->log('修改留言' . $id . '成功！');
+                $this->addLog('修改留言' . $id . '成功！');
                 if (! ! $backurl = get('backurl')) {
                     success('修改成功！', base64_decode($backurl));
                 } else {

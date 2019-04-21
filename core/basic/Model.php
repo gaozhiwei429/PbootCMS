@@ -1,7 +1,6 @@
 <?php
 /**
  * @copyright (C)2016-2099 Hnaoyun Inc.
- * @license This is not a freeware, use is subject to license terms
  * @author XingMeng
  * @email hnxsh@foxmail.com
  * @date 2016年11月6日
@@ -37,7 +36,7 @@ class Model
     public $createTimeField = 'create_time';
 
     // 程序执行的SQL语句记录
-    public $exeSql = array();
+    private $exeSql = array();
 
     // 是否解密转义
     private $decode = false;
@@ -58,7 +57,9 @@ class Model
     private $selectSql = "SELECT %distinct% %field% FROM %table% %join% %where% %group% %having% %order% %limit% %union%";
 
     // 计数语句
-    private $countSql = "SELECT %distinct% COUNT(*) AS sum FROM %table% %join% %where% %having% %limit%";
+    private $countSql = "SELECT %distinct% COUNT(*) AS sum FROM %table% %join% %where% %group% %having% %union%";
+
+    private $countSql2 = "SELECT %distinct% %field% FROM %table% %join% %where% %group% %having% %union%";
 
     // 插入语句
     private $insertSql = "INSERT INTO %table% %field% VALUES %value%";
@@ -144,9 +145,31 @@ class Model
         }
         
         if ($this->showSql && $clear) {
-            exit($sql . '<br />');
+            exit($sql);
         } else {
             return $sql;
+        }
+    }
+
+    /**
+     * 内容输出
+     *
+     * @param mixed $data            
+     * @return mixed
+     */
+    private function outData($result)
+    {
+        if ($this->decode) {
+            $result = decode_string($result);
+            $this->decode = false;
+        } else {
+            $result = decode_slashes($result);
+        }
+        if ($this->showRs) {
+            print_r($result);
+            exit();
+        } else {
+            return $result;
         }
     }
 
@@ -166,38 +189,6 @@ class Model
     final public function commit()
     {
         $this->getDb()->commit();
-    }
-
-    /**
-     * 内容输出
-     *
-     * @param mixed $data            
-     * @return mixed
-     */
-    final protected function outData($result)
-    {
-        if ($this->decode) {
-            $result = decode_string($result);
-            $this->decode = false;
-        } else {
-            $result = decode_slashes($result);
-        }
-        if ($this->showRs) {
-            print_r($result);
-            exit();
-        } else {
-            return $result;
-        }
-    }
-
-    /**
-     * 连贯操作：是否解码转义数据
-     */
-    final public function decode($flag = true)
-    {
-        if ($flag === true)
-            $this->decode = true;
-        return $this;
     }
 
     /**
@@ -225,6 +216,16 @@ class Model
     {
         if ($flag === true)
             $this->showRs = true;
+        return $this;
+    }
+
+    /**
+     * 连贯操作：是否解码转义数据
+     */
+    final public function decode($flag = true)
+    {
+        if ($flag === true)
+            $this->decode = true;
         return $this;
     }
 
@@ -263,9 +264,9 @@ class Model
                     $table_string .= '`' . $key . '` AS ' . $value . ',';
                 }
             }
-            $this->table = substr($table_string, 0, - 1);
+            $this->sql['table'] = substr($table_string, 0, - 1);
         } else {
-            $this->table = $table;
+            $this->sql['table'] = $table;
         }
         return $this;
     }
@@ -928,20 +929,45 @@ class Model
             return $this->select();
         }
         
-        if (! isset($this->sql['field']))
+        if (! isset($this->sql['field']) || ! $this->sql['field'])
             $this->sql['field'] = '*';
         
         // 如果调用了分页函数且分页，则执行分页处理
         if (isset($this->sql['paging']) && $this->sql['paging']) {
-            // 生成总数计算语句
-            $count_sql = $this->buildSql($this->countSql, false);
-            // 获取记录总数
-            if (! ! $rs = $this->getDb()->one($count_sql)) {
-                $total = $rs->sum;
-                // 分页内容
-                $limit = Paging::getInstance()->limit($total, true);
-                // 获取分页参数并设置分页
-                $this->limit($limit);
+            if ($this->sql['group']) { // 解决使用分组时count(*)分页不准问题
+                if (get_db_type() == 'mysql') {
+                    $this->limit(Paging::getInstance()->quikLimit()); // 分页
+                    $this->sql['field'] = 'SQL_CALC_FOUND_ROWS ' . $this->sql['field']; // 添加查询总记录
+                    $sql = $this->buildSql($this->selectSql);
+                    $result = $this->getDb()->all($sql, $type);
+                    $count_sql = "select FOUND_ROWS() as sum";
+                    if (! ! $rs = $this->getDb()->one($count_sql)) {
+                        $total = $rs->sum;
+                        // 分页内容
+                        $limit = Paging::getInstance()->limit($total, true); // 生成分页代码
+                    }
+                } else {
+                    $count_sql = $this->buildSql($this->countSql2, false);
+                    // 获取记录总数
+                    if (! ! $rs = $this->getDb()->all($count_sql)) {
+                        $total = count($rs);
+                        // 分页内容
+                        $limit = Paging::getInstance()->limit($total, true);
+                        // 获取分页参数并设置分页
+                        $this->limit($limit);
+                    }
+                }
+            } else {
+                // 生成总数计算语句
+                $count_sql = $this->buildSql($this->countSql, false);
+                // 获取记录总数
+                if (! ! $rs = $this->getDb()->one($count_sql)) {
+                    $total = $rs->sum;
+                    // 分页内容
+                    $limit = Paging::getInstance()->limit($total, true);
+                    // 获取分页参数并设置分页
+                    $this->limit($limit);
+                }
             }
         }
         // 构建查询语句
@@ -949,7 +975,9 @@ class Model
         if ($type === false) {
             return $sql;
         }
-        $result = $this->getDb()->all($sql, $type);
+        if (! isset($result)) {
+            $result = $this->getDb()->all($sql, $type);
+        }
         return $this->outData($result);
     }
 
@@ -1405,6 +1433,103 @@ class Model
         if (! preg_match('/^[\w\.\-]+$/', $key)) {
             error('传递的SQL数据中含有非法字符:' . $key);
         }
+    }
+
+    // ***************************快速方法*******************************************************
+    
+    /**
+     * 获取列表数据
+     *
+     * @param int $id
+     *            数据ID值
+     * @return array
+     */
+    public function getList($page = true, $order = 'id DESC')
+    {
+        return $this->page($page)
+            ->order($order)
+            ->select();
+    }
+
+    /**
+     * 查找数据列表
+     *
+     * @param string $field            
+     * @param string $keyword            
+     * @return array
+     */
+    public function getSerach($field, $keyword, $page = true, $order = 'id DESC', $matchType = "all")
+    {
+        return $this->like($field, $keyword, $matchType)
+            ->page($page)
+            ->order($order)
+            ->select();
+    }
+
+    /**
+     * 获取单条数据
+     *
+     * @param int $id
+     *            数据ID值
+     * @return array
+     */
+    public function getOne($id)
+    {
+        return $this->where("id=$id")->find();
+    }
+
+    /**
+     * 删除多条数据
+     *
+     * @param array|string $range
+     *            数据id集
+     * @return boolean
+     */
+    public function delList($range)
+    {
+        return $this->in('id', $range)->delete();
+    }
+
+    /**
+     * 删除单条数据
+     *
+     * @param int $id
+     *            数据ID值
+     * @return boolean
+     */
+    public function delOne($id)
+    {
+        return $this->where("id=$id")->delete();
+    }
+
+    /**
+     * 修改数据
+     *
+     * @param int $id
+     *            数据ID值
+     * @param array $data
+     *            数据
+     * @return boolean
+     */
+    public function modData($id, $data, $autotime = true)
+    {
+        return $this->where("id=$id")
+            ->autoTime($autotime)
+            ->update($data);
+    }
+
+    /**
+     * 写入系统日志
+     *
+     * @param string $content
+     *            日志内容
+     * @param string $level
+     *            日志级别
+     * @return void
+     */
+    public function addLog($content, $level = "info", $username = null)
+    {
+        Log::write($content, $level, $username);
     }
 }
 

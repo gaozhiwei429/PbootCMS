@@ -1,7 +1,6 @@
 <?php
 /**
  * @copyright (C)2016-2099 Hnaoyun Inc.
- * @license This is not a freeware, use is subject to license terms
  * @author XingMeng
  * @email hnxsh@foxmail.com
  * @date 2018年4月20日
@@ -77,7 +76,7 @@ class ListController extends Controller
         
         // 输出数据
         if (get('page') <= PAGECOUNT) {
-            json(1, $data);
+            return json(1, $data);
         } else {
             return json(0, '已经到底了！');
         }

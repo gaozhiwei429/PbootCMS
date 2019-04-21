@@ -8,6 +8,6 @@ class IndexController extends Controller
 
     public function index()
     {
-        json(0, '不存在的API');
+        return json(0, '不存在的API');
     }
 }

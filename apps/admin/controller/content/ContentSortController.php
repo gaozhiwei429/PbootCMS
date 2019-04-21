@@ -1,7 +1,6 @@
 <?php
 /**
  * @copyright (C)2016-2099 Hnaoyun Inc.
- * @license This is not a freeware, use is subject to license terms
  * @author XingMeng
  * @email hnxsh@foxmail.com
  * @date 2017年12月26日
@@ -185,10 +184,10 @@ class ContentSortController extends Controller
                 if ($type == 1 && ! $outlink) { // 在填写了外链时不生成单页
                     $this->addSingle($scode, $name);
                 }
-                $this->log('新增数据内容栏目' . $scode . '成功！');
+                $this->addLog('新增数据内容栏目' . $scode . '成功！');
                 success('新增成功！', url('/admin/ContentSort/index'));
             } else {
-                $this->log('新增数据内容栏目' . $scode . '失败！');
+                $this->addLog('新增数据内容栏目' . $scode . '失败！');
                 error('新增失败！', - 1);
             }
         } else {
@@ -242,10 +241,10 @@ class ContentSortController extends Controller
         if ($_POST) {
             if (! ! $list = post('list')) {
                 if ($this->model->delSortList($list)) {
-                    $this->log('批量删除栏目成功！');
+                    $this->addLog('批量删除栏目成功！');
                     success('批量删除成功！', - 1);
                 } else {
-                    $this->log('批量删除栏目失败！');
+                    $this->addLog('批量删除栏目失败！');
                     error('批量删除失败！', - 1);
                 }
             } else {
@@ -257,10 +256,10 @@ class ContentSortController extends Controller
             error('传递的参数值错误！', - 1);
         }
         if ($this->model->delSort($scode)) {
-            $this->log('删除数据内容栏目' . $scode . '成功！');
+            $this->addLog('删除数据内容栏目' . $scode . '成功！');
             success('删除成功！', - 1);
         } else {
-            $this->log('删除数据内容栏目' . $scode . '失败！');
+            $this->addLog('删除数据内容栏目' . $scode . '失败！');
             error('删除失败！', - 1);
         }
     }
@@ -279,7 +278,7 @@ class ContentSortController extends Controller
                                 $sorting[$key] = 255;
                             $this->model->modSortSorting($value, "sorting=" . $sorting[$key]);
                         }
-                        $this->log('批量修改栏目排序成功！');
+                        $this->addLog('批量修改栏目排序成功！');
                         success('修改成功！', - 1);
                     } else {
                         alert_back('排序失败，无任何内容！');
@@ -295,10 +294,10 @@ class ContentSortController extends Controller
         // 单独修改状态
         if (($field = get('field', 'var')) && ! is_null($value = get('value', 'var'))) {
             if ($this->model->modSort($scode, "$field='$value',update_user='" . session('username') . "'")) {
-                $this->log('修改数据内容栏目' . $scode . '状态' . $value . '成功！');
+                $this->addLog('修改数据内容栏目' . $scode . '状态' . $value . '成功！');
                 location(- 1);
             } else {
-                $this->log('修改数据内容栏目' . $scode . '状态' . $value . '失败！');
+                $this->addLog('修改数据内容栏目' . $scode . '状态' . $value . '失败！');
                 alert_back('修改失败！');
             }
         }
@@ -378,7 +377,7 @@ class ContentSortController extends Controller
                     $this->addSingle($scode, $name);
                 }
                 
-                $this->log('修改数据内容栏目' . $scode . '成功！');
+                $this->addLog('修改数据内容栏目' . $scode . '成功！');
                 success('修改成功！', url('/admin/ContentSort/index'));
             } else {
                 location(- 1);

@@ -1,7 +1,6 @@
 <?php
 /**
  * @copyright (C)2016-2099 Hnaoyun Inc.
- * @license This is not a freeware, use is subject to license terms
  * @author XingMeng
  * @email hnxsh@foxmail.com
  * @date 2016年11月6日
@@ -89,12 +88,6 @@ class Controller
         return Config::set($itemName, $data);
     }
 
-    // 写入日志信息
-    final protected function log($content, $level = "info")
-    {
-        Log::write($content, $level);
-    }
-
     // 解析运行时间标签
     private function runtime($content)
     {
@@ -111,6 +104,12 @@ class Controller
             header("Content-Length: " . strlen($content));
         }
         return $content;
+    }
+
+    // 写入系统日志
+    final protected function addLog($content, $level = "info", $username = null)
+    {
+        Log::write($content, $level, $username);
     }
 }
 

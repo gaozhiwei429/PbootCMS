@@ -1,7 +1,6 @@
 <?php
 /**
  * @copyright (C)2016-2099 Hnaoyun Inc.
- * @license This is not a freeware, use is subject to license terms
  * @author XingMeng
  * @email hnxsh@foxmail.com
  * @date 2017年3月13日
@@ -54,7 +53,7 @@ class IndexController extends Controller
         }
         
         // 删除修改后老数据库（上一步无法直接删除）
-        if (issetSession('deldb')) {
+        if (is_session('deldb')) {
             @unlink(ROOT_PATH . session('deldb'));
             unset($_SESSION['deldb']);
         }
@@ -94,7 +93,7 @@ class IndexController extends Controller
         
         // 在安装了gd库时才执行验证码验证
         if (extension_loaded("gd") && $this->config('admin_check_code') && strtolower(post('checkcode', 'var')) != session('checkcode')) {
-            json(0, '验证码错误！');
+            return json(0, '验证码错误！');
         }
         
         // 就收数据
@@ -102,15 +101,15 @@ class IndexController extends Controller
         $password = post('password');
         
         if (! preg_match('/^[\x{4e00}-\x{9fa5}\w\-\.@]+$/u', $username)) {
-            json(0, '用户名含有不允许的特殊字符！');
+            return json(0, '用户名含有不允许的特殊字符！');
         }
         
         if (! $username) {
-            json(0, '用户名不能为空！');
+            return json(0, '用户名不能为空！');
         }
         
         if (! $password) {
-            json(0, '密码不能为空！');
+            return json(0, '密码不能为空！');
         }
         
         // 执行用户登录
@@ -121,7 +120,7 @@ class IndexController extends Controller
         
         // 判断数据库写入权限
         if ((get_db_type() == 'sqlite') && ! is_writable(ROOT_PATH . $this->config('database.dbname'))) {
-            json(0, '数据库目录写入权限不足！');
+            return json(0, '数据库目录写入权限不足！');
         }
         
         if (! ! $login = $this->model->login($where)) {
@@ -152,11 +151,11 @@ class IndexController extends Controller
             session('area_map', $login->area_map); // 区域代码名称映射表
             session('area_tree', $login->area_tree); // 用户区域树
             
-            $this->log('登入成功!');
-            json(1, url('admin/Index/home'));
+            $this->addLog('登入成功!');
+            return json(1, url('admin/Index/home'));
         } else {
-            $this->log('登入失败!');
-            json(0, '用户名或密码错误！');
+            $this->addLog('登入失败!');
+            return json(0, '用户名或密码错误！');
         }
     }
 
@@ -212,11 +211,11 @@ class IndexController extends Controller
                 if ($this->model->modUserInfo($data)) {
                     session('username', post('username'));
                     session('realname', post('realname'));
-                    $this->log('用户资料成功！');
+                    $this->addLog('用户资料成功！');
                     success('用户资料修改成功！', - 1);
                 }
             } else {
-                $this->log('用户资料修改时当前密码错误！');
+                $this->addLog('用户资料修改时当前密码错误！');
                 alert_location('当前密码错误！', - 1);
             }
         }
@@ -247,10 +246,10 @@ class IndexController extends Controller
             if (extension_loaded('Zend OPcache')) {
                 opcache_reset(); // 在启用了OPcache加速器时同时清理
             }
-            $this->log('清理缓存成功！');
+            $this->addLog('清理缓存成功！');
             alert_back('清理缓存成功！');
         } else {
-            $this->log('清理缓存失败！');
+            $this->addLog('清理缓存失败！');
             alert_back('清理缓存失败！');
         }
     }
@@ -260,9 +259,9 @@ class IndexController extends Controller
     {
         $upload = upload('upload');
         if (is_array($upload)) {
-            json(1, $upload);
+            return json(1, $upload);
         } else {
-            json(0, $upload);
+            return json(0, $upload);
         }
     }
 }

@@ -1,7 +1,6 @@
 <?php
 /**
  * @copyright (C)2016-2099 Hnaoyun Inc.
- * @license This is not a freeware, use is subject to license terms
  * @author XingMeng
  * @email hnxsh@foxmail.com
  * @date 2018年3月8日
@@ -27,9 +26,9 @@ class DoController extends Controller
     {
         if (! ! $id = request('id', 'int')) {
             $this->model->addLikes($id);
-            json(1, '点赞成功');
+            return json(1, '点赞成功');
         } else {
-            json(0, '点赞失败');
+            return json(0, '点赞失败');
         }
     }
 
@@ -38,9 +37,9 @@ class DoController extends Controller
     {
         if (! ! $id = request('id', 'int')) {
             $this->model->addOppose($id);
-            json(1, '反对成功');
+            return json(1, '反对成功');
         } else {
-            json(0, '反对失败');
+            return json(0, '反对失败');
         }
     }
 }

@@ -1,7 +1,6 @@
 <?php
 /**
  * @copyright (C)2016-2099 Hnaoyun Inc.
- * @license This is not a freeware, use is subject to license terms
  * @author XingMeng
  * @email hnxsh@foxmail.com
  * @date 2018年01月03日
@@ -51,7 +50,7 @@ class ConfigController extends Controller
                 }
             }
             
-            $this->log('修改参数配置成功！');
+            $this->addLog('修改参数配置成功！');
             path_delete(RUN_PATH . '/config'); // 清理缓存的配置文件
             switch (post('submit')) {
                 case 'msg':
@@ -105,7 +104,7 @@ class ConfigController extends Controller
                 }
                 $this->modDbConfig($key);
             }
-            $this->log('修改邮件发送配置成功！');
+            $this->addLog('修改邮件发送配置成功！');
             path_delete(RUN_PATH . '/config'); // 清理缓存的配置文件
             success('修改成功！', url('/admin/Config/email'));
         }

@@ -1,7 +1,6 @@
 <?php
 /**
  * @copyright (C)2016-2099 Hnaoyun Inc.
- * @license This is not a freeware, use is subject to license terms
  * @author XingMeng
  * @email hnxsh@foxmail.com
  * @date 2018年03月23日
@@ -79,14 +78,14 @@ class LabelController extends Controller
             
             // 执行添加
             if ($this->model->addLabel($data)) {
-                $this->log('修改自定义标签' . $name . '成功！');
+                $this->addLog('修改自定义标签' . $name . '成功！');
                 if (! ! $backurl = get('backurl')) {
                     success('新增成功！', base64_decode($backurl));
                 } else {
                     success('新增成功！', url('admin/Label/index?#tab=t2', false));
                 }
             } else {
-                $this->log('新增自定义标签' . $name . '失败！');
+                $this->addLog('新增自定义标签' . $name . '失败！');
                 error('新增失败！', url('admin/Label/index?#tab=t2', false));
             }
         } else {
@@ -102,10 +101,10 @@ class LabelController extends Controller
             error('传递的参数值错误！', - 1);
         }
         if ($this->model->delLabel($id)) {
-            $this->log('删除自定义标签' . $id . '成功！');
+            $this->addLog('删除自定义标签' . $id . '成功！');
             success('删除成功！', url('admin/Label/index?#tab=t2', false));
         } else {
-            $this->log('删除自定义标签' . $id . '失败！');
+            $this->addLog('删除自定义标签' . $id . '失败！');
             error('删除失败！', - 1);
         }
     }
@@ -151,7 +150,7 @@ class LabelController extends Controller
             
             // 执行添加
             if ($this->model->modLabel($id, $data)) {
-                $this->log('修改自定义标签字段' . $id . '成功！');
+                $this->addLog('修改自定义标签字段' . $id . '成功！');
                 success('修改成功！', url('admin/Label/index?#tab=t2', false));
             } else {
                 location(- 1);
