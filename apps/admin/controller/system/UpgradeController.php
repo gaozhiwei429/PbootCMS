@@ -54,7 +54,9 @@ class UpgradeController extends Controller
     {
         // 清理目录，检查下载目录及备份目录
         path_delete(RUN_PATH . '/upgrade', true);
-        check_dir(RUN_PATH . '/upgrade', true);
+        if (! check_dir(RUN_PATH . '/upgrade', true)) {
+            json(0, '目录写入权限不足，无法正常升级！' . RUN_PATH . '/upgrade');
+        }
         check_dir(DOC_PATH . STATIC_DIR . '/backup/upgrade', true);
         
         $files = $this->getServerList();
@@ -100,8 +102,11 @@ class UpgradeController extends Controller
                 foreach ($list as $value) {
                     // 本地存储路径
                     $path = RUN_PATH . '/upgrade' . $value;
-                    check_dir(dirname($path), true); // 自动创建目录
-                                                     
+                    // 自动创建目录
+                    if (! check_dir(dirname($path), true)) {
+                        json(0, '目录写入权限不足，无法下载升级文件！' . dirname($path));
+                    }
+                    
                     // 定义执行下载的类型
                     $types = '.zip|.rar|.doc|.docx|.ppt|.pptx|.xls|.xlsx|.chm|';
                     $pathinfo = explode(".", basename($path));
@@ -141,7 +146,9 @@ class UpgradeController extends Controller
                         $path = RUN_PATH . '/upgrade' . $value;
                         $des_path = ROOT_PATH . $value;
                         $back_path = DOC_PATH . STATIC_DIR . '/backup/upgrade/' . $backdir . $value;
-                        check_dir(dirname($des_path), true); // 检查目录并字段创建
+                        if (! check_dir(dirname($des_path), true)) {
+                            json(0, '目录写入权限不足，无法正常升级！' . dirname($des_path));
+                        }
                         if (file_exists($des_path)) { // 文件存在时执行备份
                             check_dir(dirname($back_path), true);
                             copy($des_path, $back_path);
