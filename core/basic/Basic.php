@@ -155,7 +155,7 @@ class Basic
     public static function createApi($name, $param = null, $rsJson = false, $rsArray = false)
     {
         
-        // 如果知识传递方法，则自动完善
+        // 如果只是传递了方法，则自动完善模块及控制器
         if (strpos($name, '.') === false) {
             $name = M . '.' . C . '.' . $name;
         }
