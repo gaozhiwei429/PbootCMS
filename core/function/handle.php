@@ -876,4 +876,14 @@ function verify($string, $type, $varname = '', $exit = false)
     }
 }
 
+// 统计对象元素
+function count_object($obj)
+{
+    $i = 0;
+    foreach ($obj as $key => $value) {
+        $i ++;
+    }
+    return $i;
+}
+
 

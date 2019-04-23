@@ -181,8 +181,20 @@ function model($name, $new = false)
     return Basic::createModel($name, $new);
 }
 
-// api读取数据
-function api($name, $param = array(), $rsJson = false, $rsArray = false)
+/**
+ * api读取数据
+ *
+ * @param string $name
+ *            接口名称，如：add或 admin.user.addd
+ * @param array $param
+ *            参数
+ * @param string $rsJson
+ *            结果放回JSON方式
+ * @param string $rsArray
+ *            返回数组方式
+ * @return mixed
+ */
+function api($name, $param = null, $rsJson = false, $rsArray = false)
 {
     return Basic::createApi($name, $param, $rsJson, $rsArray);
 }

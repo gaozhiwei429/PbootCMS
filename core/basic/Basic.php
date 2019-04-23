@@ -152,20 +152,21 @@ class Basic
     }
 
     // 创建数据接口
-    public static function createApi($name, $param = array(), $rsJson = false, $rsArray = false)
+    public static function createApi($name, $param = null, $rsJson = false, $rsArray = false)
     {
-        // 获取类名
-        if (strpos($name, '.') !== false) {
-            $path = explode('.', $name);
-            $len = count($path); // 第一个为模块 $path[0]，倒数第二个为控制器$path[$i]，倒数第一个为方法$path[$i+1]
-            $class_name = '';
-            for ($i = 1; $i < $len - 2; $i ++) {
-                $class_name .= '\\' . $path[$i];
-            }
-            $class_name = '\\app\\' . $path[0] . '\\model' . $class_name . '\\' . ucfirst($path[$i]) . 'Model';
-        } else {
-            error('调取接口名称不完整！' . $name);
+        
+        // 如果知识传递方法，则自动完善
+        if (strpos($name, '.') === false) {
+            $name = M . '.' . C . '.' . $name;
         }
+        
+        $path = explode('.', $name);
+        $len = count($path); // 第一个为模块 $path[0]，倒数第二个为控制器$path[$i]，倒数第一个为方法$path[$i+1]
+        $class_name = '';
+        for ($i = 1; $i < $len - 2; $i ++) {
+            $class_name .= '\\' . $path[$i];
+        }
+        $class_name = '\\app\\' . $path[0] . '\\model' . $class_name . '\\' . ucfirst($path[$i]) . 'Model';
         
         // 实例化类
         if (isset(self::$models[$name])) {
@@ -174,20 +175,18 @@ class Basic
             $model = new $class_name();
         }
         
-        // 单参数时处理
-        if ($param && ! is_array($param)) {
-            $param = array(
-                $param
-            );
-        } elseif (! $param) {
-            $param = array();
-        }
-        
         // 调取接口方法
-        $json = call_user_func_array(array(
-            $model,
-            $path[$i + 1]
-        ), $param);
+        if (is_array($param)) {
+            $json = call_user_func_array(array(
+                $model,
+                $path[$i + 1]
+            ), $param);
+        } else {
+            $json = call_user_func(array(
+                $model,
+                $path[$i + 1]
+            ), $param);
+        }
         
         // 返回结果
         if ($rsJson) {
@@ -198,6 +197,8 @@ class Basic
             } else {
                 switch (json_last_error()) {
                     case JSON_ERROR_NONE:
+                        print_r($json);
+                        die();
                         $err = '请检查返回数据！';
                         break;
                     case JSON_ERROR_DEPTH:
