@@ -152,7 +152,7 @@ class Basic
     }
 
     // 创建数据接口
-    public static function createApi($name, $param = null, $rsJson = false, $rsArray = false)
+    public static function createApi($name, $param = null, $rsOriginal = false, $jsonRsArray = false)
     {
         
         // 如果只是传递了方法，则自动完善模块及控制器
@@ -189,10 +189,10 @@ class Basic
         }
         
         // 返回结果
-        if ($rsJson) {
+        if ($rsOriginal) {
             return $json;
         } else {
-            if (! ! $rs = json_decode($json, $rsArray)) {
+            if (! ! $rs = json_decode($json, $jsonRsArray)) {
                 return $rs;
             } else {
                 switch (json_last_error()) {

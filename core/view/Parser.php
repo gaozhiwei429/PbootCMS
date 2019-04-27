@@ -17,12 +17,35 @@ class Parser
     // 模板路径在嵌套时必须
     private static $tplPath;
 
-    // 编译公共方法
-    public static function compile($tplPath, $content)
+    // 包含文件
+    private static $tplInc = array();
+
+    /**
+     * 编译公共方法
+     *
+     * @param string $tplPath
+     *            模板主题目录，需要是物理路径
+     * @param string $tplFile
+     *            需要解析的模板文件，需要是物理路径
+     * @return string|mixed
+     */
+    public static function compile($tplPath, $tplFile)
     {
+        // 接收模板目录参数
         self::$tplPath = $tplPath;
-        self::$content = ltrim($content, "\xEF\xBB\xBF"); // 去除内容Bom信息;
-                                                          
+        
+        // 读取模板内容
+        $content = file_get_contents($tplFile) ?: error('模板文件读取错误！' . $tplFile);
+        
+        // 去除内容Bom信息;
+        self::$content = ltrim($content, "\xEF\xBB\xBF");
+        
+        // 解析文件包含，需要优先解析
+        self::parInclude();
+        
+        // 添加包含文件记录
+        self::$content .= "<?php return " . var_export(array_unique(self::$tplInc), 1) . "; ?>";
+        
         // =====以下为直接输出方法=========
         self::parOutputUrl(); // 输出地址输出
         self::parOutputDefine(); // 输出常量
@@ -39,8 +62,9 @@ class Parser
                               
         // =========以下为逻辑控制方法==========
         self::parIf(); // IF语句
-        self::parForeach(); // Foreach语句
-        self::parSubForeach(); // Foreach语句嵌套
+        self::parForeachVar(); // Foreach语句
+        self::parForeachValue(); // Foreach语句嵌套
+        self::parForeachObj(); // Foreach对象属性
         self::parNote(); // 备注
         self::parPhp(); // PHP语句
                         
@@ -58,6 +82,40 @@ class Parser
                         
         // 返回解释的内容
         return self::$content;
+    }
+
+    // 解析包含文件，支持多层嵌套
+    private static function parInclude()
+    {
+        $pattern = '/\{include\s+file\s?=\s?([\"\']?)([\w\.\-\/]+)([\"\']?)\s*\}/';
+        if (preg_match_all($pattern, self::$content, $matches)) {
+            $arr = $matches[0]; // 匹配到的所有“包含字符串”：{include file='head.html'}
+            $brr = $matches[2]; // 包含的文件名：head.html
+            $count = count($arr);
+            for ($i = 0; $i < $count; $i ++) {
+                // 然包含文件支持绝对路径，以/开头
+                if (strpos($brr[$i], '/') === 0) {
+                    $inc_file = ROOT_PATH . $brr[$i];
+                } else {
+                    $inc_file = self::$tplPath . '/' . $brr[$i];
+                }
+                file_exists($inc_file) ?: error('包含文件不存在！' . $inc_file);
+                if (! $inc_content = file_get_contents($inc_file)) {
+                    error('包含的模板文件' . $brr[$i] . '读取错误！');
+                } else {
+                    self::$content = str_replace($arr[$i], $inc_content, self::$content); // 包含内容
+                    self::$tplInc[] = $inc_file;
+                }
+            }
+            // 最大数量不超过50，防止互相包含导致无限循环
+            if (count(self::$tplInc) < 50) {
+                self::parInclude();
+            } else {
+                error('检测到您模板中包含文件超过50个，请检查是否存在互相包含导致无限循环的情况！');
+            }
+        } else {
+            return false;
+        }
     }
 
     // 解析地址输出 {url./home/index/index}
@@ -198,19 +256,13 @@ class Parser
     }
 
     // 解析循环语句 {foreach $var(key,value,num)}...[num][value->name]或[value]...{/foreach}
-    private static function parForeach()
+    private static function parForeachVar()
     {
         $pattern_foreach = '/\{foreach\s+\$([\w]+)\(([\w]+),([\w]+)(,([\w]+))?\)\}/';
         $pattern_end_foreach = '/\{\/foreach\}/';
         
         if (preg_match_all($pattern_foreach, self::$content, $matches)) {
             $count = count($matches[0]);
-            
-            // if (preg_match_all($pattern_end_foreach, self::$content, $matches2)) {
-            // if (count($matches2[0]) != $count)
-            // error('模板中foreach语句标签没有闭合！');
-            // }
-            
             for ($i = 0; $i < $count; $i ++) {
                 if (! $matches[5][$i]) {
                     $matches[5][$i] = 'num';
@@ -244,18 +296,13 @@ class Parser
     }
 
     // 解析循环语句嵌套 {foreach $value->name(key,value,num)}...[num][value->name]或[value]...{/foreach}
-    private static function parSubForeach()
+    private static function parForeachValue()
     {
         $pattern_foreach = '/\{foreach\s+\$([\w][\w\->]+)\(([\w]+),([\w]+)(,([\w]+))?\)\}/';
         $pattern_end_foreach = '/\{\/foreach\}/';
         
         if (preg_match_all($pattern_foreach, self::$content, $matches)) {
             $count = count($matches[0]);
-            
-            // if (preg_match_all($pattern_end_foreach, self::$content, $matches2)) {
-            // if (count($matches2[0]) != $count)
-            // error('模板中foreach语句标签没有闭合！');
-            // }
             
             for ($i = 0; $i < $count; $i ++) {
                 if (! $matches[5][$i]) {
@@ -286,6 +333,47 @@ class Parser
             }
             // 解析闭合标签
             self::$content = str_replace('{/foreach}', "<?php }?>", self::$content);
+        }
+    }
+
+    // 解析循环语句 {foreach [$var->name](key,value,num)}...{/foreach}
+    private static function parForeachObj()
+    {
+        $pattern_foreach = '/\{foreach\s+\[\$([\w]+)\-\>([\w]+)\]\(([\w]+),([\w]+)(,([\w]+))?\)\}/';
+        $pattern_end_foreach = '/\{\/foreach\}/';
+        
+        if (preg_match_all($pattern_foreach, self::$content, $matches)) {
+            $count = count($matches[0]);
+            
+            for ($i = 0; $i < $count; $i ++) {
+                if (! $matches[6][$i]) {
+                    $matches[6][$i] = 'num';
+                }
+                // 解析首标签
+                self::$content = str_replace($matches[0][$i], "<?php \$" . $matches[6][$i] . " = 0;foreach (\$this->getVar('" . $matches[1][$i] . "')->" . $matches[2][$i] . " as \$" . $matches[3][$i] . " => \$" . $matches[4][$i] . ") { \$" . $matches[6][$i] . "++;?>", self::$content);
+                
+                // 解析序号
+                $pattern_num = '/\[(' . $matches[6][$i] . ')\]/';
+                if (preg_match($pattern_num, self::$content)) {
+                    if (defined('PAGE')) {
+                        self::$content = preg_replace($pattern_num, "<?php echo @(PAGE-1)*PAGESIZE+\$$1; ?>", self::$content);
+                    } else {
+                        self::$content = preg_replace($pattern_num, "<?php echo \$$1; ?>", self::$content);
+                    }
+                }
+                
+                // 解析key
+                $pattern_key = '/\[(' . $matches[3][$i] . ')\]/';
+                if (preg_match($pattern_key, self::$content)) {
+                    self::$content = preg_replace($pattern_key, "<?php echo \$$1; ?>", self::$content);
+                }
+                
+                // 解析内部变量
+                $pattern_var = '/\[(' . $matches[4][$i] . ')(\[[\'\"][\w]+[\'\"]\])?(\-\>[\w$]+)?\]/';
+                self::$content = preg_replace($pattern_var, "<?php echo \$$1$2$3; ?>", self::$content);
+            }
+            // 解析闭合标签
+            self::$content = str_replace('{/foreach}', "<?php } ?>", self::$content);
         }
     }
 
@@ -321,7 +409,7 @@ class Parser
     // 解析对象变量 [$user->name]
     private static function parObjVar()
     {
-        $pattern = '/\[\$([\w]+)\-\>([\w$]+)\]/';
+        $pattern = '/\[\$([\w]+)\-\>([\w]+)\]/';
         if (preg_match($pattern, self::$content)) {
             self::$content = preg_replace($pattern, "\$this->getVar('$1')->$2", self::$content);
         }

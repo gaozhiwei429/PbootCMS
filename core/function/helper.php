@@ -188,15 +188,15 @@ function model($name, $new = false)
  *            接口名称，如：add或 admin.user.addd
  * @param array $param
  *            参数
- * @param string $rsJson
- *            结果放回JSON方式
- * @param string $rsArray
- *            返回数组方式
+ * @param string $rsOriginal
+ *            结果不处理直接返回
+ * @param string $jsonRsArray
+ *            返回Json数组方式
  * @return mixed
  */
-function api($name, $param = null, $rsJson = false, $rsArray = false)
+function api($name, $param = null, $rsOriginal = false, $jsonRsArray = false)
 {
-    return Basic::createApi($name, $param, $rsJson, $rsArray);
+    return Basic::createApi($name, $param, $rsOriginal, $jsonRsArray);
 }
 
 // 输出模板内容
