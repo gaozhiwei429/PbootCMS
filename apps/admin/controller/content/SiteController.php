@@ -48,7 +48,7 @@ class SiteController extends Controller
             'keywords' => post('keywords'),
             'description' => post('description'),
             'icp' => post('icp'),
-            'theme' => post('theme') ?: 'default',
+            'theme' => basename(post('theme')) ?: 'default', // 避免跨目录
             'statistical' => post('statistical'),
             'copyright' => post('copyright')
         );

@@ -89,7 +89,7 @@ class View
         // 设置主题
         $theme = isset($this->vars['theme']) ? $this->vars['theme'] : 'default';
         
-        if (! is_dir($this->tplPath .= '/' . $theme)) { // 检查主题是否存在
+        if (! is_dir($this->tplPath .= '/' . basename($theme))) { // 检查主题是否存在
             if ($theme == 'default') { // 默认主题不存在且未默认的，自动初始化
                 check_file($this->tplPath . '/index.html', true, '<h2>(- -)欢迎您使用本系统，请开始您的开发旅程吧!</h2>');
             } else {
