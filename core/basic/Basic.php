@@ -181,11 +181,16 @@ class Basic
                 $model,
                 $path[$i + 1]
             ), $param);
-        } else {
+        } elseif ($param !== null) {
             $json = call_user_func(array(
                 $model,
                 $path[$i + 1]
             ), $param);
+        } else {
+            $json = call_user_func(array(
+                $model,
+                $path[$i + 1]
+            ));
         }
         
         // 返回结果
