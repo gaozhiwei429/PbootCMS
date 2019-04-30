@@ -89,13 +89,10 @@ class View
     {
         // 设置主题
         $theme = isset($this->vars['theme']) ? $this->vars['theme'] : 'default';
+        $theme = basename($theme); // 过滤相对路径
         
         if (! is_dir($this->tplPath .= '/' . $theme)) { // 检查主题是否存在
-            if ($theme == 'default') { // 默认主题不存在且未默认的，自动初始化
-                check_file($this->tplPath . '/index.html', true, '<h2>(- -)欢迎您使用本系统，请开始您的开发旅程吧!</h2>');
-            } else {
-                error('模板主题目录不存在！主题路径：' . $this->tplPath);
-            }
+            error('模板主题目录不存在！主题路径：' . $this->tplPath);
         }
         
         // 定义当前应用主题目录
